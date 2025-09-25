@@ -16,10 +16,14 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="9.0.9" />
+    <PackageReference Include="Microsoft.Extensions.Options.DataAnnotations" Version="9.0.9" />
+    <PackageReference Include="Minio" Version="6.0.5" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\QuizApp.Application\QuizApp.Application.csproj" />
     <ProjectReference Include="..\QuizApp.Domain\QuizApp.Domain.csproj" />
   </ItemGroup>
 

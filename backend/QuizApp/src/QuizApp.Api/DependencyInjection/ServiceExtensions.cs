@@ -1,4 +1,5 @@
 ﻿using Microsoft.OpenApi.Models;
+using QuizApp.Application;
 using QuizApp.Infrastructure;
 using Serilog;
 
@@ -11,6 +12,8 @@ public static class ServiceExtensions
         services.AddSerilogLogger(configuration);
 
         services.AddInfrastructureServices(configuration);
+
+        services.AddApplicationServices();
 
         services.AddSwagger();
 

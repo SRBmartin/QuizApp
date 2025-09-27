@@ -1,8 +1,14 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using QuizApp.Api.Web.Identity;
 using QuizApp.Application;
+using QuizApp.Application.Abstractions.Identity;
 using QuizApp.Infrastructure;
+using QuizApp.Infrastructure.Configuration;
 using Serilog;
+using System.Text;
 
 namespace QuizApp.Api.DependencyInjection;
 
@@ -21,6 +27,8 @@ public static class ServiceExtensions
         services.AddSwagger();
 
         services.AddCors(configuration);
+
+        services.AddAuth(configuration);
 
         return services;
     }
@@ -94,6 +102,39 @@ public static class ServiceExtensions
                 builder.SetPreflightMaxAge(TimeSpan.FromHours(1));
             });
         });
+
+        return services;
+    }
+
+    private static IServiceCollection AddAuth(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddHttpContextAccessor();
+        services.AddScoped<ICurrentUser, CurrentUser>();
+
+        var jwt = configuration.GetSection(JwtConfiguration.SectionName).Get<JwtConfiguration>();
+
+        services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+        .AddJwtBearer(options =>
+        {
+            options.RequireHttpsMetadata = false;
+            options.MapInboundClaims = false;
+
+            options.TokenValidationParameters = new()
+            {
+                ValidateIssuer = true,
+                ValidIssuer = jwt.Issuer,
+                ValidateAudience = true,
+                ValidAudience = jwt.Audience,
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt.SecurityKey)),
+                ValidateLifetime = true,
+                ClockSkew = TimeSpan.FromSeconds(30),
+                NameClaimType = "username",
+                RoleClaimType = "role"
+            };
+        });
+
+        services.AddAuthorization();
 
         return services;
     }

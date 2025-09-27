@@ -21,7 +21,6 @@ public class UsersController (
 
         var command = new RegisterUserCommand(request.Username, request.Email, request.Password, img, request.Image?.ContentType!);
 
-
         var result = await mediator.Send(command, cancellationToken);
 
         return this.ToActionResult(result);

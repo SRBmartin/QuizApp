@@ -13,4 +13,14 @@ public class Tag
 
     #endregion
 
+    public static Tag Create(Guid id, string name, Guid CreatedBy)
+    {
+        return new()
+        {
+            Id = id,
+            Name = name,
+            CreatedById = CreatedBy
+        };
+    }
+
 }

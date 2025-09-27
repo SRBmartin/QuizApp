@@ -24,6 +24,7 @@ app.UseSerilogRequestLogging();
 
 app.UseCors(Cors.Name);
 
+app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 

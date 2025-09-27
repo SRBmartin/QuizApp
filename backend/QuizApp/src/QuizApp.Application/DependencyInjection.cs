@@ -24,7 +24,7 @@ public static class DependencyInjection
         services.AddAutoMapper(cfg =>
         {
             cfg.AddMaps(executingAssembly);
-        });
+        }, Assembly.GetExecutingAssembly());
 
         return services;
     }

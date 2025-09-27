@@ -80,7 +80,6 @@ const RegisterPage: React.FC = () => {
     if (!/[^a-zA-Z0-9]/.test(form.password)) return "Password must contain a non-alphanumeric character.";
     if (form.password !== form.confirmPassword) return "Passwords do not match.";
 
-    // ✅ image required
     if (!form.image) return "Avatar image is required.";
     if (!form.image.type.startsWith("image/")) return "Avatar must be an image file.";
     if (form.image.size > MAX_IMAGE_MB * 1024 * 1024) return `Avatar must be ≤ ${MAX_IMAGE_MB}MB.`;
@@ -231,7 +230,6 @@ const RegisterPage: React.FC = () => {
               )}
             </div>
 
-            {/* hidden file input */}
             <input
               ref={inputRef}
               type="file"

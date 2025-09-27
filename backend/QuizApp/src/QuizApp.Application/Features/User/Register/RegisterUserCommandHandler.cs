@@ -18,15 +18,15 @@ public class RegisterUserCommandHandler (
     IImageBucketNameProvider bucketNameProvider,
     IStorageKeyBuilder storageKeyBuilder,
     IIdentityService identityService
-) : IRequestHandler<RegisterUserCommand, Result<RegisterUserDto>>
+) : IRequestHandler<RegisterUserCommand, Result<AuthDto>>
 {
-    public async Task<Result<RegisterUserDto>> Handle(RegisterUserCommand command, CancellationToken cancellationToken)
+    public async Task<Result<AuthDto>> Handle(RegisterUserCommand command, CancellationToken cancellationToken)
     {
         if (await userRepository.ExistsByUsernameAsync(command.Username, cancellationToken))
-            return Result<RegisterUserDto>.Failure(new Error("user.username_conflict", "Username already taken."));
+            return Result<AuthDto>.Failure(new Error("user.username_conflict", "Username already taken."));
 
         if (await userRepository.ExistsByEmailAsync(command.Email, cancellationToken))
-            return Result<RegisterUserDto>.Failure(new Error("user.email_conflict", "Email already in use."));
+            return Result<AuthDto>.Failure(new Error("user.email_conflict", "Email already in use."));
 
         var hash = passwordService.Hash(command.Password);
 
@@ -51,6 +51,6 @@ public class RegisterUserCommandHandler (
 
         var token = await identityService.GenerateAccessTokenAsync(user.Id, user.Username, user.Role.ToString(), cancellationToken);
 
-        return Result<RegisterUserDto>.Success(new RegisterUserDto(token));
+        return Result<AuthDto>.Success(new AuthDto(token));
     }
 }

@@ -1,4 +1,5 @@
-﻿using Microsoft.OpenApi.Models;
+﻿using Microsoft.Extensions.Options;
+using Microsoft.OpenApi.Models;
 using QuizApp.Application;
 using QuizApp.Infrastructure;
 using Serilog;
@@ -18,6 +19,8 @@ public static class ServiceExtensions
         services.AddControllers();
 
         services.AddSwagger();
+
+        services.AddCors(configuration);
 
         return services;
     }
@@ -65,6 +68,31 @@ public static class ServiceExtensions
                 { securityScheme, Array.Empty<string>() }
             };
             o.AddSecurityRequirement(securityRequirement);
+        });
+
+        return services;
+    }
+
+    private static IServiceCollection AddCors(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddCors(options =>
+        {
+            options.AddPolicy(Cors.Name, builder =>
+            {
+                var origins = configuration.GetSection("Cors:AllowedOrigins").Get<string[]>();
+                if (origins is { Length: > 0 })
+                {
+                    builder.WithOrigins(origins)
+                           .AllowAnyHeader()
+                           .AllowAnyMethod();
+                }
+                else
+                {
+                    builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
+                }
+
+                builder.SetPreflightMaxAge(TimeSpan.FromHours(1));
+            });
         });
 
         return services;

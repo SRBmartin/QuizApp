@@ -11,4 +11,4 @@ public record RegisterUserCommand
     string Password,
     Stream ImageContent,
     string ImageContentType
-) : IRequest<Result<RegisterUserDto>>;
+) : IRequest<Result<AuthDto>>;

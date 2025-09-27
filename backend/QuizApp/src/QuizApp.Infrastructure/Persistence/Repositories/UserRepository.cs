@@ -29,4 +29,16 @@ public class UserRepository (
             .AsNoTracking()
             .AnyAsync(t => t.Username.Equals(username), cancellationToken); 
     }
+
+    public async Task<User?> FindByUsernameOrEmail(string usernameOrEmail, CancellationToken cancellationToken)
+    {
+       return await dbContext
+            .Users
+            .AsNoTracking()
+            .FirstOrDefaultAsync(t =>
+                t.Username.Equals(usernameOrEmail) || t.Email.Equals(usernameOrEmail),
+                cancellationToken
+            );
+    }
+
 }

@@ -27,6 +27,11 @@ else
 
 app.UseSerilogRequestLogging();
 
+app.UseCors(Cors.Name);
+
+app.UseAuthentication();
+app.UseAuthorization();
+
 app.MapControllers();
 
 app.Run();

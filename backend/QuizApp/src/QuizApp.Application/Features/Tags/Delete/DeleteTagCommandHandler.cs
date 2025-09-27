@@ -7,6 +7,7 @@ namespace QuizApp.Application.Features.Tags.Delete;
 
 public class DeleteTagCommandHandler (
     ITagRepository tagRepository,
+    IQuizTagRepository quizTagRepository,
     IUnitOfWork uow
 ) : IRequestHandler<DeleteTagCommand, Result<Unit>>
 {
@@ -15,6 +16,11 @@ public class DeleteTagCommandHandler (
         var tag = await tagRepository.FindByIdAsync(command.Id, cancellationToken);
         if (tag is null)
             return Result<Unit>.Failure(new Error("tag.not_found", "Tag not found."));
+
+        if (await quizTagRepository.ExistsForTagAsync(tag.Id, cancellationToken))
+        {
+            return Result<Unit>.Failure(new Error("tag.conflict", "Tag is connected to some quizes and can't be deleted."));
+        }
 
         tag.Delete();
 

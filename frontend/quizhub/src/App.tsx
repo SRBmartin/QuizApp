@@ -8,6 +8,10 @@ import Footer from "./components/common/Footer/Footer";
 import LoginPage from "./pages/User/Login/LoginPage";
 import RegisterPage from "./pages/Register/RegisterPage";
 
+import { AuthProvider } from "./context/AuthContext";
+import RequireAuth from "./routes/RequireAuth";
+import RequireGuest from "./routes/RequireGuest";
+
 const Home: React.FC = () => (
   <div style={{ padding: "2rem" }}>
     <h2>Home</h2>
@@ -17,20 +21,32 @@ const Home: React.FC = () => (
 
 function App() {
   return (
-    <Router>
-      <div className="app-wrapper">
-        <Header />
-        <main className="main-content">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
-            <Route path="*" element={<Navigate to="/" />} />
-          </Routes>
-        </main>
-        <Footer />
-      </div>
-    </Router>
+    <AuthProvider>
+      <Router>
+        <div className="app-wrapper">
+          <Header />
+          <main className="main-content">
+            <Routes>
+              <Route path="/" element={<Home />} />
+
+              {/* Guest-only routes */}
+              <Route element={<RequireGuest redirectTo="/" />}>
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/register" element={<RegisterPage />} />
+              </Route>
+
+              {/* Auth-only routes */}
+              <Route element={<RequireAuth />}>
+                
+              </Route>
+
+              <Route path="*" element={<Navigate to="/" />} />
+            </Routes>
+          </main>
+          <Footer />
+        </div>
+      </Router>
+    </AuthProvider>
   );
 }
 

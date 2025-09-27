@@ -1,25 +1,18 @@
 import { AuthDto, LoginRequest, RegisterForm } from "../types/User";
 import { http } from "./http";
-
-const TOKEN_KEY = "auth.token";
+import { authStorage } from "./auth.storage";
 
 export const auth = {
   get token() {
-    return localStorage.getItem(TOKEN_KEY);
-  },
-
-  set token(value: string | null) {
-    if (!value) localStorage.removeItem(TOKEN_KEY);
-    else localStorage.setItem(TOKEN_KEY, value);
+    return authStorage.token;
   },
 
   async login(req: LoginRequest): Promise<AuthDto> {
     const dto = await http<AuthDto>("/api/Users/login", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(req),
     });
-    this.token = dto.accessToken;
+    authStorage.token = dto.accessToken;
     return dto;
   },
 
@@ -34,11 +27,11 @@ export const auth = {
       method: "POST",
       body: fd,
     });
-    this.token = dto.accessToken;
+    authStorage.token = dto.accessToken;
     return dto;
   },
 
   logout() {
-    this.token = null;
+    authStorage.clear();
   },
 };

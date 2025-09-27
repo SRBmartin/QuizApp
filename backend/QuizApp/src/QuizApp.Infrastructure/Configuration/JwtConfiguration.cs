@@ -5,6 +5,8 @@ namespace QuizApp.Infrastructure.Configuration;
 public class JwtConfiguration
 {
     public const string SectionName = "JwtConfiguration";
+    public const string UsernameClaim = "username";
+    public const string RoleClaim = "role";
 
     [Required]
     public string Issuer { get; set; } = null!;

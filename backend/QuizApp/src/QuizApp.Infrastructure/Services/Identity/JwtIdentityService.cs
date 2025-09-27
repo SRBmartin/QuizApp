@@ -44,10 +44,8 @@ public class JwtIdentityService : IIdentityService
         var claims = new List<Claim>
         {
             new(JwtRegisteredClaimNames.Sub, userId.ToString()),
-            new(JwtRegisteredClaimNames.UniqueName, username),
-            new(ClaimTypes.NameIdentifier, userId.ToString()),
-            new(ClaimTypes.Name, username),
-            new(ClaimTypes.Role, role),
+            new(JwtConfiguration.UsernameClaim, username),
+            new(JwtConfiguration.RoleClaim, role),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             new(JwtRegisteredClaimNames.Iat, now.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64)
         };

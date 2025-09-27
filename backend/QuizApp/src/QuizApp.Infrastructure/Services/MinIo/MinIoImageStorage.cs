@@ -37,7 +37,7 @@ public class MinIoImageStorage : IImageStorage
         _minioClient = builder.Build();
 
         _logger.LogInformation(
-            "MinIO client created. Endpoint={Endpoint}, SSL={SSL}, PathStyle={PathStyle}, Region={Region}",
+            "[MinIO]: MinIO client created. Endpoint={Endpoint}, SSL={SSL}, PathStyle={PathStyle}, Region={Region}",
             _options.Endpoint, _options.UseSsl, _options.ForcePathStyle, _options.Region
         );
     }
@@ -50,7 +50,7 @@ public class MinIoImageStorage : IImageStorage
         {
             await _minioClient.MakeBucketAsync(new MakeBucketArgs().WithBucket(bucket), cancellationToken);
 
-            _logger.LogInformation("Created bucket {Bucket}", bucket);
+            _logger.LogInformation("[MinIO]: Created bucket {Bucket}", bucket);
         }
     }
 

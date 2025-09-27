@@ -6,6 +6,7 @@ import Header from "./components/common/Header/Header";
 import Footer from "./components/common/Footer/Footer";
 
 import LoginPage from "./pages/User/Login/LoginPage";
+import RegisterPage from "./pages/Register/RegisterPage";
 
 const Home: React.FC = () => (
   <div style={{ padding: "2rem" }}>
@@ -23,6 +24,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>
         </main>

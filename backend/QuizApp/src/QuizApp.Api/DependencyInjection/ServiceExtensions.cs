@@ -1,4 +1,5 @@
-﻿using QuizApp.Infrastructure;
+﻿using Microsoft.OpenApi.Models;
+using QuizApp.Infrastructure;
 using Serilog;
 
 namespace QuizApp.Api.DependencyInjection;
@@ -11,6 +12,8 @@ public static class ServiceExtensions
 
         services.AddInfrastructureServices(configuration);
 
+        services.AddSwagger();
+
         return services;
     }
 
@@ -19,6 +22,45 @@ public static class ServiceExtensions
         services.AddSerilog((sp, lc) => lc
             .ReadFrom.Configuration(configuration)
         );
+
+        return services;
+    }
+
+    private static IServiceCollection AddSwagger(this IServiceCollection services)
+    {
+        services.AddEndpointsApiExplorer();
+
+        services.AddSwaggerGen(o =>
+        {
+            o.SwaggerDoc("v1", new OpenApiInfo
+            {
+                Title = "QuizApp API",
+                Version = "v1",
+                Description = "QuizApp Restful API"
+            });
+
+            var securityScheme = new OpenApiSecurityScheme
+            {
+                Name = "Authorization",
+                Description = "Enter: Bearer {your JWT}",
+                In = ParameterLocation.Header,
+                Type = SecuritySchemeType.Http,
+                Scheme = "bearer",
+                BearerFormat = "JWT",
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            };
+            o.AddSecurityDefinition("Bearer", securityScheme);
+
+            var securityRequirement = new OpenApiSecurityRequirement
+            {
+                { securityScheme, Array.Empty<string>() }
+            };
+            o.AddSecurityRequirement(securityRequirement);
+        });
 
         return services;
     }

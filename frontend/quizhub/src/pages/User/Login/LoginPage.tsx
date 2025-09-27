@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { auth } from "../../../services/auth.api";
 import "./LoginPage.scss"
+import { useAuth } from "../../../context/AuthContext";
 
 type FormState = {
   usernameOrEmail: string;
@@ -16,6 +17,8 @@ const LoginPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  const { login } = useAuth();
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm((s) => ({ ...s, [e.target.name]: e.target.value }));
@@ -35,10 +38,11 @@ const LoginPage: React.FC = () => {
     setError(null);
     setLoading(true);
     try {
-      await auth.login({
+      const dto = await auth.login({
         usernameOrEmail: form.usernameOrEmail.trim(),
         password: form.password,
       });
+      login(dto.accessToken);
       navigate("/");
     } catch (err: any) {
       setError(err.message ?? "Login failed.");

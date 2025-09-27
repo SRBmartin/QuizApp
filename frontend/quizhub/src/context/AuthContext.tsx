@@ -1,7 +1,9 @@
+// src/context/AuthContext.tsx
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { auth } from "../services/auth.api";
 import { hasRole } from "../services/jwt.util";
 import type { AuthUser, AuthState, JwtRole } from "../models/auth";
+import { TOKEN_KEY } from "../services/auth.storage";
 
 type AuthContextShape = AuthState & {
   refresh(): void;
@@ -18,26 +20,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [{ user }, setState] = useState(compute);
 
   const refresh = () => setState(compute);
+
   useEffect(() => {
     const handler = (e: StorageEvent) => {
-      if (e.key === "quizhub.token") refresh();
+      if (e.key === TOKEN_KEY) refresh();
     };
     window.addEventListener("storage", handler);
     return () => window.removeEventListener("storage", handler);
   }, []);
 
-  const isAuthenticated = !!user;
-  const isAdmin = hasRole(user, "Admin");
-
-  const value = useMemo<AuthContextShape>(() => ({
-    isAuthenticated,
-    user,
-    isAdmin,
-    refresh,
-    hasRole: (r) => hasRole(user, r),
-    login: (token: string) => { auth.loginSuccess(token); refresh(); },
-    logout: () => { auth.logout(); refresh(); },
-  }), [isAuthenticated, isAdmin, user]);
+  const value = useMemo<AuthContextShape>(() => {
+    const isAuthenticated = !!user;
+    const isAdmin = hasRole(user, "Admin");
+    return {
+      isAuthenticated,
+      user,
+      isAdmin,
+      refresh,
+      hasRole: (r) => hasRole(user, r),
+      login: (token: string) => { auth.loginSuccess(token); refresh(); },
+      logout: () => { auth.logout(); refresh(); },
+    };
+  }, [user]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

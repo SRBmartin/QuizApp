@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using MediatR;
+using Microsoft.AspNetCore.Mvc;
 using QuizApp.Application.Common.Result;
 
 namespace QuizApp.Api.Extensions;
@@ -8,7 +9,9 @@ public static class ResultExtensions
     public static IActionResult ToActionResult(this ControllerBase controller, Result result, int successStatusCode = StatusCodes.Status204NoContent)
     {
         if (result.IsSuccess)
-            return controller.StatusCode(successStatusCode);
+            return successStatusCode == StatusCodes.Status204NoContent ?
+                controller.NoContent() :
+                controller.StatusCode(successStatusCode);
 
         return controller.StatusCode(MapStatus(result.Error), new
         {
@@ -25,6 +28,12 @@ public static class ResultExtensions
     {
         if (result.IsSuccess)
         {
+            if (successStatusCode == StatusCodes.Status204NoContent)
+                return controller.NoContent();
+
+            if (typeof(T) == typeof(Unit) && successStatusCode == StatusCodes.Status200OK)
+                return controller.NoContent();
+
             var payload = projector is null ? (object?)result.Value : projector(result.Value!);
             return controller.StatusCode(successStatusCode, payload);
         }

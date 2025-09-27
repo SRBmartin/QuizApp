@@ -5,6 +5,7 @@ public class Tag
     public Guid Id { get; set; }
     public Guid CreatedById { get; set; }
     public string Name { get; set; } = default!;
+    public bool IsDeleted { get; set; }
 
     #region Navigation
 
@@ -19,8 +20,19 @@ public class Tag
         {
             Id = id,
             Name = name,
-            CreatedById = CreatedBy
+            CreatedById = CreatedBy,
+            IsDeleted = false
         };
+    }
+
+    public void Update(string name)
+    {
+        Name = name;
+    }
+
+    public void Delete()
+    {
+        IsDeleted = true;
     }
 
 }

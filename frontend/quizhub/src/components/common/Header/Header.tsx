@@ -5,14 +5,14 @@ import { useAuth } from "../../../context/AuthContext";
 import { auth } from "../../../services/auth.api";
 
 const Header: React.FC = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isAdmin, logout } = useAuth();
   const navigate = useNavigate();
 
   const onLogout = () => {
     const ok = window.confirm("Are you sure you want to log out?");
     if (!ok) return;
 
-    auth.logout();
+    logout();
     navigate("/login", { replace: true });
   };
 
@@ -39,6 +39,13 @@ const Header: React.FC = () => {
               Dashboard
             </NavLink>
           )}
+          
+          {isAdmin && (
+              <NavLink to="/admin/tags" className={({ isActive }) => (isActive ? "active" : "")}>
+              Tags
+            </NavLink>
+          )}
+
         </nav>
 
         <div className="header-actions">

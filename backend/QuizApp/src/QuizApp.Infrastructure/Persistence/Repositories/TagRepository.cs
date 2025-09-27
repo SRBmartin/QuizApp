@@ -57,7 +57,7 @@ public class TagRepository(
     {
         dbContext
             .Tags
-            .Remove(tag);
+            .Update(tag); //logic delete
     }
 
     public void Update(Tag tag)

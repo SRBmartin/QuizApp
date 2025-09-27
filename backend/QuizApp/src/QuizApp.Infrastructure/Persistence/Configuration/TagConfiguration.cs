@@ -11,7 +11,10 @@ public class TagConfiguration : IEntityTypeConfiguration<Tag>
         builder.ToTable("Tags");
         builder.HasKey(x => x.Id);
 
+        builder.HasQueryFilter(x => !x.IsDeleted);
+
         builder.Property(x => x.Name).IsRequired();
+        builder.Property(x => x.IsDeleted).IsRequired().HasDefaultValue(false);
 
         builder.HasOne(x => x.CreatedBy)
             .WithMany(x => x.TagsCreated)

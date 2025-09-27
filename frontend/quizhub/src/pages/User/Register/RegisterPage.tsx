@@ -1,6 +1,6 @@
 import React, { useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { auth } from "../../services/auth.api";
+import { auth } from "../../../services/auth.api";
 import "./RegisterPage.scss";
 
 type FormState = {

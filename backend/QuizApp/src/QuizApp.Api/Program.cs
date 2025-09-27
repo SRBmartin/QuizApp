@@ -27,4 +27,6 @@ else
 
 app.UseSerilogRequestLogging();
 
+app.MapControllers();
+
 app.Run();

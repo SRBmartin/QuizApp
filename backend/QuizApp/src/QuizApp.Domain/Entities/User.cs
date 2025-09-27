@@ -20,4 +20,17 @@ public class User
 
     #endregion
 
+    public static User Create(Guid id, string username, string email, string passwordHash, Role role = Role.User, string? photo = null)
+    {
+        return new()
+        {
+            Id = id,
+            Username = username,
+            Email = email,
+            PasswordHash = passwordHash,
+            Role = role,
+            Photo = photo
+        };
+    }
+
 }

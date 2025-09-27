@@ -15,6 +15,8 @@ public static class ServiceExtensions
 
         services.AddApplicationServices();
 
+        services.AddControllers();
+
         services.AddSwagger();
 
         return services;

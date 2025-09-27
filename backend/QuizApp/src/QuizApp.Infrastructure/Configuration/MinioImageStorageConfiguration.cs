@@ -22,4 +22,6 @@ public class MinioImageStorageConfiguration
     public bool ForcePathStyle { get; set; } = true;
     [Required]
     public long MultipartChunkSizeBytes { get; set; }
+    [Required]
+    public string UsersBucket { get; set; } = default!;
 }

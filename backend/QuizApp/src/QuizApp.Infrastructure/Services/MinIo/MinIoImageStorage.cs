@@ -27,12 +27,19 @@ public class MinIoImageStorage : IImageStorage
             .WithCredentials(_options.AccessKey, _options.SecretKey)
             .WithSSL(_options.UseSsl);
 
+        
+
         if (!string.IsNullOrWhiteSpace(_options.Region))
         {
             builder.WithRegion(_options.Region);
         }
 
         _minioClient = builder.Build();
+
+        _logger.LogInformation(
+            "MinIO client created. Endpoint={Endpoint}, SSL={SSL}, PathStyle={PathStyle}, Region={Region}",
+            _options.Endpoint, _options.UseSsl, _options.ForcePathStyle, _options.Region
+        );
     }
 
     /// <inheritdoc/>

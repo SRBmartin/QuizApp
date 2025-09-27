@@ -3,8 +3,12 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using QuizApp.Application.Abstractions.Identity;
 using QuizApp.Application.Abstractions.Storage;
+using QuizApp.Domain.Repositories;
+using QuizApp.Domain.Repositories.UoW;
 using QuizApp.Infrastructure.Configuration;
 using QuizApp.Infrastructure.Persistence.Context;
+using QuizApp.Infrastructure.Persistence.Repositories;
+using QuizApp.Infrastructure.Persistence.Repositories.UoW;
 using QuizApp.Infrastructure.Services.Identity;
 using QuizApp.Infrastructure.Services.MinIo;
 
@@ -36,6 +40,17 @@ public static class DependencyInjection
             });
         });
 
+        services.AddRepositories();
+
+        return services;
+    }
+
+    private static IServiceCollection AddRepositories(this IServiceCollection services)
+    {
+        services.AddScoped<IUserRepository, UserRepository>();
+        
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
+
         return services;
     }
 
@@ -47,6 +62,8 @@ public static class DependencyInjection
             .ValidateOnStart();
 
         services.AddSingleton<IImageStorage, MinIoImageStorage>();
+        services.AddSingleton<IImageBucketNameProvider, ImageBucketNameProvider>();
+        services.AddSingleton<IStorageKeyBuilder, StorageKeyBuilder>();
 
         return services;
     }
@@ -59,6 +76,8 @@ public static class DependencyInjection
             .ValidateOnStart();
 
         services.AddSingleton<IIdentityService, JwtIdentityService>();
+
+        services.AddSingleton<IPasswordService, BCryptPasswordService>();
 
         return services;
     }

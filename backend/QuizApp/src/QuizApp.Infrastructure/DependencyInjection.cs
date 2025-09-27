@@ -1,9 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using QuizApp.Application.Abstractions.Identity;
 using QuizApp.Application.Abstractions.Storage;
 using QuizApp.Infrastructure.Configuration;
 using QuizApp.Infrastructure.Persistence.Context;
+using QuizApp.Infrastructure.Services.Identity;
 using QuizApp.Infrastructure.Services.MinIo;
 
 namespace QuizApp.Infrastructure;
@@ -15,6 +17,8 @@ public static class DependencyInjection
         services.AddPersistence(configuration);
 
         services.AddMinIo(configuration);
+
+        services.AddJwtIdentity(configuration);
 
         return services;
     }
@@ -43,6 +47,18 @@ public static class DependencyInjection
             .ValidateOnStart();
 
         services.AddSingleton<IImageStorage, MinIoImageStorage>();
+
+        return services;
+    }
+
+    private static IServiceCollection AddJwtIdentity(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddOptions<JwtConfiguration>()
+            .Bind(configuration.GetSection(JwtConfiguration.SectionName))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
+        services.AddSingleton<IIdentityService, JwtIdentityService>();
 
         return services;
     }

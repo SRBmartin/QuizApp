@@ -13,7 +13,7 @@ const Header: React.FC = () => {
     if (!ok) return;
 
     auth.logout();
-    navigate("/", { replace: true });
+    navigate("/login", { replace: true });
   };
 
   return (

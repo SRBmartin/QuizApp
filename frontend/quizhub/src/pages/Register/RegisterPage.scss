@@ -1,0 +1,219 @@
+.auth-page {
+  min-height: calc(100dvh - 140px);
+  display: grid;
+  place-items: center;
+  padding: 3rem 1.5rem;
+  background:
+    radial-gradient(60rem 60rem at 120% -10%, rgba(0,0,0,0.03), transparent),
+    radial-gradient(40rem 40rem at -10% 120%, rgba(0,0,0,0.02), transparent);
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 480px;
+  background: #ffffff;
+  color: #111827;
+  border-radius: 16px;
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.06),
+    0 1px 2px rgba(0, 0, 0, 0.05);
+  padding: 2rem;
+}
+
+.auth-title {
+  margin: 0 0 0.25rem;
+  font-size: clamp(1.4rem, 1.2rem + 1vw, 1.8rem);
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.auth-subtitle {
+  margin: 0 0 1.5rem;
+  color: #6b7280;
+  font-size: 0.95rem;
+}
+
+.auth-alert {
+  margin-bottom: 1rem;
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+}
+
+.auth-form { display: grid; gap: 1rem; }
+
+.auth-label {
+  display: grid;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: #374151;
+
+  > span { font-weight: 600; }
+}
+
+.auth-input-group {
+  position: relative;
+}
+
+.auth-input {
+  box-sizing: border-box;
+  width: 100%;
+  appearance: none;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  color: #111827;
+  border-radius: 12px;
+  padding: 0.75rem 2.75rem 0.75rem 0.9rem;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+
+  &:focus {
+    border-color: #60a5fa;
+    box-shadow: 0 0 0 4px rgba(96, 165, 250, 0.25);
+  }
+
+  &:disabled {
+    background: #f9fafb;
+    color: #9ca3af;
+  }
+}
+
+.auth-eye {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  transform: translateY(-50%);
+  height: 32px;
+  min-width: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid transparent;
+  background: transparent;
+  border-radius: 10px;
+  cursor: pointer;
+
+  &:hover { background: #f3f4f6; }
+  &:disabled { cursor: not-allowed; opacity: 0.6; }
+}
+
+.auth-btn {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  border: none;
+  border-radius: 12px;
+  background: #2563eb;
+  color: #ffffff;
+  padding: 0.9rem 1rem;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  cursor: pointer;
+  transition: transform 0.02s ease-in-out, box-shadow 0.2s, background 0.2s;
+
+  &:hover { background: #1d4ed8; box-shadow: 0 10px 20px rgba(37, 99, 235, 0.2); }
+  &:active { transform: translateY(1px); }
+  &:disabled { opacity: 0.7; cursor: not-allowed; }
+}
+
+.auth-foot {
+  margin-top: 1.25rem;
+  font-size: 0.92rem;
+  color: #4b5563;
+
+  .auth-link {
+    color: #2563eb;
+    text-decoration: none;
+    font-weight: 600;
+
+    &:hover { text-decoration: underline; }
+  }
+}
+
+.auth-file-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.auth-file-name {
+  font-size: 0.9rem;
+  color: #374151;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.auth-file-clear {
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  color: #374151;
+  border-radius: 10px;
+  padding: 0.35rem 0.6rem;
+  cursor: pointer;
+
+  &:hover { background: #f3f4f6; }
+  &:disabled { cursor: not-allowed; opacity: 0.6; }
+}
+
+.uploader {
+  border: 1.5px dashed #d1d5db;
+  background: #fafafa;
+  border-radius: 12px;
+  padding: 1.25rem;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+
+  display: grid;
+  gap: 0.35rem;
+  justify-items: center;
+
+  &:hover {
+    background: #f5f6f8;
+  }
+
+  &.is-dragging {
+    border-color: #60a5fa;
+    box-shadow: 0 0 0 4px rgba(96,165,250,0.25);
+    background: #f0f6ff;
+  }
+
+  &.has-file {
+    padding: 0.5rem;
+  }
+}
+
+.uploader-icon { font-size: 1.5rem; }
+.uploader-text { color: #374151; }
+.uploader-hint { color: #6b7280; font-size: 0.85rem; }
+
+.uploader-preview {
+  width: 96px;
+  height: 96px;
+  border-radius: 999px;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+}
+
+.uploader-input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+  pointer-events: none;
+}

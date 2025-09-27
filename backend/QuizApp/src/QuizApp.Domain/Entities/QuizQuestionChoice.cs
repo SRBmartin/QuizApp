@@ -1,0 +1,18 @@
+﻿namespace QuizApp.Domain.Entities;
+
+public class QuizQuestionChoice
+{
+    public Guid Id { get; set; }
+    public Guid QuestionId { get; set; }
+    public string Label { get; set; } = default!;
+    public bool IsCorrect { get; set; }
+    public bool IsDeleted { get; set; }
+
+    #region Navigation
+
+    public virtual QuizQuestion Question { get; set; } = default!;
+    public virtual ICollection<AttemptItemChoice> AttemptItemChoices { get; set; } = new HashSet<AttemptItemChoice>();
+
+    #endregion
+
+}

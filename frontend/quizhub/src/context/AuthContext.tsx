@@ -1,26 +1,49 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
-import { authStorage } from "../services/auth.storage";
+import { auth } from "../services/auth.api";
+import { hasRole } from "../services/jwt.util";
+import type { AuthUser, AuthState, JwtRole } from "../models/auth";
 
-type AuthCtx = {
-  token: string | null;
-  isAuthenticated: boolean;
+type AuthContextShape = AuthState & {
+  refresh(): void;
+  hasRole(role: JwtRole): boolean;
+  login(token: string): void;
+  logout(): void;
 };
 
-const Ctx = createContext<AuthCtx>({ token: null, isAuthenticated: false });
+const AuthContext = createContext<AuthContextShape | undefined>(undefined);
 
-export const AuthProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
-  const [token, setToken] = useState<string | null>(() => authStorage.token);
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const compute = (): { user: AuthUser | null } => ({ user: auth.getCurrentUser() });
 
+  const [{ user }, setState] = useState(compute);
+
+  const refresh = () => setState(compute);
   useEffect(() => {
-    return authStorage.onChange(() => setToken(authStorage.token));
+    const handler = (e: StorageEvent) => {
+      if (e.key === "quizhub.token") refresh();
+    };
+    window.addEventListener("storage", handler);
+    return () => window.removeEventListener("storage", handler);
   }, []);
 
-  const value = useMemo<AuthCtx>(() => ({
-    token,
-    isAuthenticated: !!token
-  }), [token]);
+  const isAuthenticated = !!user;
+  const isAdmin = hasRole(user, "Admin");
 
-  return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
+  const value = useMemo<AuthContextShape>(() => ({
+    isAuthenticated,
+    user,
+    isAdmin,
+    refresh,
+    hasRole: (r) => hasRole(user, r),
+    login: (token: string) => { auth.loginSuccess(token); refresh(); },
+    logout: () => { auth.logout(); refresh(); },
+  }), [isAuthenticated, isAdmin, user]);
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
-export const useAuth = () => useContext(Ctx);
+export const useAuth = () => {
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error("useAuth must be used within <AuthProvider>");
+  return ctx;
+};

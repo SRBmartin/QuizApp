@@ -1,6 +1,8 @@
 import { AuthDto, LoginRequest, RegisterForm } from "../types/User";
 import { http } from "./http";
-import { authStorage } from "./auth.storage";
+import { authStorage, TOKEN_KEY } from "./auth.storage";
+import { decodeClaims, isExpired, toAuthUser } from "./jwt.util";
+import { AuthUser } from "../models/auth";
 
 export const auth = {
   get token() {
@@ -34,4 +36,19 @@ export const auth = {
   logout() {
     authStorage.clear();
   },
+
+  getToken(): string | null {
+    return localStorage.getItem(TOKEN_KEY);
+  },
+
+  getCurrentUser(): AuthUser | null {
+    const claims = decodeClaims(this.getToken());
+    if (!claims || isExpired(claims)) return null;
+    return toAuthUser(claims);
+  },
+
+  loginSuccess(token: string) {
+    localStorage.setItem(TOKEN_KEY, token);
+  },
+
 };

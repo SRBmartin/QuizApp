@@ -1,0 +1,14 @@
+@import "./components/common/Header/Header.scss";
+@import "./components/common/Footer/Footer.scss";
+
+.app-wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.main-content {
+  flex: 1;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+}

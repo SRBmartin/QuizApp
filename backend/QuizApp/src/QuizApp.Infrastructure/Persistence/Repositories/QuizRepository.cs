@@ -34,6 +34,17 @@ public class QuizRepository(
             );
     }
 
+    public async Task<bool> ExistsByNameExceptIdAsync(string name, Guid exceptId, CancellationToken cancellationToken)
+    {
+        return await dbContext
+            .Quizzes
+            .AsNoTracking()
+            .AnyAsync(
+                t => t.Name == name && t.Id != exceptId,
+                cancellationToken
+            );
+    }
+
     public async Task<Quiz?> FindByIdAsync(Guid id, CancellationToken cancellationToken)
     {
         return await dbContext

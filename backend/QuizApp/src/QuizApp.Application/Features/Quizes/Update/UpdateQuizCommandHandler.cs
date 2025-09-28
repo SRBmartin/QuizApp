@@ -19,6 +19,13 @@ public class UpdateQuizCommandHandler (
         if (quiz is null)
             return Result<QuizDto>.Failure(new Error("quiz.not_found", "Quiz not found."));
 
+        if (!string.Equals(quiz.Name, command.Name, StringComparison.Ordinal))
+        {
+            var taken = await quizRepository.ExistsByNameExceptIdAsync(command.Name, command.Id, cancellationToken);
+            if (taken)
+                return Result<QuizDto>.Failure(new Error("quiz.name_taken", "Quiz name already exists."));
+        }
+
         quiz.Update(command.Name, command.Description, command.DifficultyLevel, command.TimeInSeconds, command.IsPublished);
 
         await uow.SaveChangesAsync(cancellationToken);

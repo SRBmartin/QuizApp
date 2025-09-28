@@ -13,6 +13,8 @@ import RequireAuth from "./routes/RequireAuth";
 import RequireGuest from "./routes/RequireGuest";
 import TagsPage from "./pages/Admin/Tag/TagsPage";
 import RequireAdmin from "./routes/RequireAdmin";
+import AdminQuizzesPage from "./pages/Admin/Quiz/AdminQuizzesPage";
+import QuizEditorPage from "./pages/Admin/Quiz/QuizEditorPage";
 
 const Home: React.FC = () => (
   <div style={{ padding: "2rem" }}>
@@ -41,6 +43,9 @@ function App() {
               <Route element={<RequireAuth />}>
                 <Route element={<RequireAdmin />}>
                   <Route path="/admin/tags" element={<TagsPage />} />
+                  <Route path="/admin/quizzes" element={<AdminQuizzesPage />} />
+                  <Route path="/admin/quizzes/new" element={<QuizEditorPage />} />
+                  <Route path="/admin/quizzes/:quizId" element={<QuizEditorPage />} />
                 </Route>
               </Route>
 

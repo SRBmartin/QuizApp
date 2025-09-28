@@ -12,4 +12,13 @@ public class QuizTag
 
     #endregion
 
+    public static QuizTag Create(Guid quizId, Guid tagId)
+    {
+        return new()
+        {
+            QuizId = quizId,
+            TagId = tagId
+        };
+    }
+
 }

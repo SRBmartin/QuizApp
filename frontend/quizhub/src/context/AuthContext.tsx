@@ -1,4 +1,3 @@
-// src/context/AuthContext.tsx
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { auth } from "../services/auth.api";
 import { hasRole } from "../services/jwt.util";

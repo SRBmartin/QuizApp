@@ -46,6 +46,12 @@ const Header: React.FC = () => {
             </NavLink>
           )}
 
+          {isAdmin && (
+            <NavLink to="/admin/quizzes" className={({ isActive }) => (isActive ? "active" : "")}>
+              Admin Quizzes
+            </NavLink>
+          )}
+
         </nav>
 
         <div className="header-actions">

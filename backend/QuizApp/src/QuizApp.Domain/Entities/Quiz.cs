@@ -23,4 +23,42 @@ public class Quiz
 
     #endregion
 
+    public static Quiz Create(
+        Guid id,
+        Guid createdById,
+        string name,
+        QuizLevel difficultyLevel,
+        int timeInSeconds,
+        string? description,
+        DateTimeOffset? createdAt = null
+    )
+    {
+        return new()
+        {
+            Id = id,
+            CreatedById = createdById,
+            Name = name,
+            DifficultyLevel = difficultyLevel,
+            TimeInSeconds = timeInSeconds,
+            Description = description,
+            CreatedAt = createdAt ?? DateTimeOffset.UtcNow,
+            IsPublished = false,
+            IsDeleted = false
+        };
+    }
+
+    public void Update(string name, string? description, QuizLevel level, int timeInSeconds, bool isPublished)
+    {
+        Name = name;
+        Description = description;
+        DifficultyLevel = level;
+        TimeInSeconds = timeInSeconds;
+        IsPublished = isPublished;
+    }
+
+    public void Delete()
+    {
+        IsDeleted = true;
+    }
+
 }

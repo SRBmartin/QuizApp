@@ -39,7 +39,9 @@ public class QuizRepository(
         return await dbContext
             .Quizzes
             .Include(t => t.Questions)
-            .ThenInclude(c => c.Choices)
+                .ThenInclude(c => c.Choices)
+            .Include(t => t.QuizTags)
+                .ThenInclude(c => c.Tag)
             .FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
     }
 
@@ -47,6 +49,8 @@ public class QuizRepository(
     {
         var query = dbContext
             .Quizzes
+            .Include(t => t.QuizTags)
+                .ThenInclude(c => c.Tag)
             .OrderByDescending(t => t.CreatedAt)
             .AsQueryable();
 

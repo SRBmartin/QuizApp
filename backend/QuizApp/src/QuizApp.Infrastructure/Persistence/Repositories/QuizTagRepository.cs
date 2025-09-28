@@ -47,4 +47,28 @@ public class QuizTagRepository (
         if (toRemove.Count > 0)
             dbContext.QuizTags.RemoveRange(toRemove);
     }
+
+    public async Task<List<Tag>> GetTagsForQuizAsync(Guid quizId, CancellationToken cancellationToken)
+    {
+        return await dbContext.QuizTags
+            .Where(qt => qt.QuizId == quizId)
+            .Select(qt => qt.Tag)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<Dictionary<Guid, List<Tag>>> GetTagsForQuizzesAsync(IEnumerable<Guid> quizIds, CancellationToken cancellationToken)
+    {
+        var ids = quizIds.Distinct().ToArray();
+
+        var rows = await dbContext
+            .QuizTags
+            .Where(qt => ids.Contains(qt.QuizId))
+            .Select(qt => new { qt.QuizId, qt.Tag })
+            .ToListAsync(cancellationToken);
+
+        return rows
+            .GroupBy(x => x.QuizId)
+            .ToDictionary(g => g.Key, g => g.Select(x => x.Tag).ToList());
+    }
+
 }

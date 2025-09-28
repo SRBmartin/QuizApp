@@ -4,12 +4,14 @@ using QuizApp.Application.Abstractions.Identity;
 using QuizApp.Application.Common.Page;
 using QuizApp.Application.Common.Result;
 using QuizApp.Application.DTOs.Quizes;
+using QuizApp.Application.DTOs.Tags;
 using QuizApp.Domain.Repositories;
 
 namespace QuizApp.Application.Features.Quizes.List;
 
 public class ListQuizzesQueryHandler (
     IQuizRepository quizRepository,
+    IQuizTagRepository quizTagRepository,
     IMapper mapper,
     ICurrentUser currentUser
 ) : IRequestHandler<ListQuizzesQuery, Result<PagedListDto<QuizDto>>>
@@ -25,6 +27,17 @@ public class ListQuizzesQueryHandler (
         var items = await quizRepository.ListAsync(skip, take, includeUnpublished, cancellationToken);
 
         var dtos = items.Select(i => mapper.Map<QuizDto>(i)).ToList();
+
+        var quizIds = items.Select(i => i.Id).ToArray();
+        var tagsByQuiz = await quizTagRepository.GetTagsForQuizzesAsync(quizIds, cancellationToken);
+
+        foreach (var dto in dtos)
+        {
+            if (tagsByQuiz.TryGetValue(dto.Id, out var tagEntities))
+                dto.Tags = tagEntities.Select(t => mapper.Map<TagDto>(t)).ToList();
+            else
+                dto.Tags = new List<TagDto>();
+        }
 
         var page = new PagedListDto<QuizDto>(dtos, total, skip, take);
         return Result<PagedListDto<QuizDto>>.Success(page);

@@ -1,5 +1,7 @@
-﻿using QuizApp.Application.Common.Mappings;
+﻿using AutoMapper;
+using QuizApp.Application.Common.Mappings;
 using QuizApp.Application.DTOs.Questions;
+using QuizApp.Application.DTOs.Tags;
 using QuizApp.Domain.Entities;
 using QuizApp.Domain.Enums;
 
@@ -17,5 +19,6 @@ public class QuizDto : IMapFrom<Quiz>
     public bool IsDeleted { get; set; }
 
     public List<QuestionDto> Questions { get; set; }
+    public List<TagDto> Tags { get; set; } = new();
 
 }

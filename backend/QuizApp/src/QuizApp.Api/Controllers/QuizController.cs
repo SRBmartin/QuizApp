@@ -8,6 +8,7 @@ using QuizApp.Application.Features.Quizes.Delete;
 using QuizApp.Application.Features.Quizes.GetById;
 using QuizApp.Application.Features.Quizes.List;
 using QuizApp.Application.Features.Quizes.Update;
+using QuizApp.Application.Features.Quizes.UpdateTags;
 
 namespace QuizApp.Api.Controllers;
 
@@ -69,6 +70,18 @@ public class QuizController (
         var query = new ListQuizzesQuery(skip, take);
 
         var result = await mediator.Send(query, cancellationToken);
+
+        return this.ToActionResult(result);
+    }
+
+    [HttpPut("{quizId:guid}/tags")]
+    [RequireJwtToken]
+    [RequireAdminRole]
+    public async Task<IActionResult> UpdateTags([FromRoute] Guid quizId, [FromBody] UpdateQuizTagsRequest request, CancellationToken cancellationToken)
+    {
+        var command = new UpdateQuizTagsCommand(quizId, request.TagIds);
+
+        var result = await mediator.Send(command, cancellationToken);
 
         return this.ToActionResult(result);
     }

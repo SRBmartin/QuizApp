@@ -53,6 +53,20 @@ public class TagRepository(
         return await q.ToListAsync(cancellationToken);
     }
 
+    public async Task<int> CountExistingAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken)
+    {
+        return await dbContext
+            .Tags
+            .CountAsync(t => ids.Contains(t.Id), cancellationToken);
+    }
+    public async Task<List<Tag>> ListByIdsAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken)
+    {
+        return await dbContext
+            .Tags
+            .Where(t => ids.Contains(t.Id))
+            .ToListAsync(cancellationToken);
+    }
+
     public void Remove(Tag tag)
     {
         dbContext

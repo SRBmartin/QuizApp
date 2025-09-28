@@ -35,10 +35,7 @@ const QuizEditorPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState<string | null>(null);
-
-  // NEW: track persisted (server) published flag separately from form
   const [persistedPublished, setPersistedPublished] = useState(false);
-
   const [questions, setQuestions] = useState<Question[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
 
@@ -82,7 +79,7 @@ const QuizEditorPage: React.FC = () => {
           };
           setForm(initial);
           setQuestions(q.questions ?? []);
-          setPersistedPublished(q.isPublished); // <-- persisted state
+          setPersistedPublished(q.isPublished);
         } else {
           setForm(emptyForm);
           setQuestions([]);
@@ -96,7 +93,6 @@ const QuizEditorPage: React.FC = () => {
 
   const canSave = useMemo(() => form.name.trim().length >= 2 && form.timeInSeconds > 0, [form]);
 
-  // Overlay uses persisted state ONLY (so toggling checkbox won't lock you out)
   const lockActive = !isCreate && persistedPublished;
 
   const onSubmit = async (e: React.FormEvent) => {
@@ -112,7 +108,6 @@ const QuizEditorPage: React.FC = () => {
           timeInSeconds: form.timeInSeconds,
         });
         if (form.tagIds.length) await quizzesApi.updateTags(created.id, form.tagIds);
-        // persisted state is false on creation until server says otherwise
         setPersistedPublished(created.isPublished ?? false);
         navigate(`/admin/quizzes/${created.id}`, { replace: true });
       } else if (quizId) {
@@ -124,7 +119,6 @@ const QuizEditorPage: React.FC = () => {
           isPublished: form.isPublished,
         });
         await quizzesApi.updateTags(updated.id, form.tagIds);
-        // reflect server truth after save
         setPersistedPublished(updated.isPublished);
         navigate(`/admin/quizzes/${updated.id}`);
       }
@@ -348,7 +342,6 @@ const QuizEditorPage: React.FC = () => {
                 type="checkbox"
                 checked={form.isPublished}
                 onChange={e => { setForm({ ...form, isPublished: e.target.checked }); if (err) setErr(null); }}
-                // NOTE: never disable the publish toggle; you can always un/publish
               />
               <span>Published</span>
             </label>
@@ -383,7 +376,6 @@ const QuizEditorPage: React.FC = () => {
 
           <div className="actions">
             <button className="btn primary" type="submit" data-allow
-              // Allow save even when overlay is on (for publish/unpublish)
               disabled={!canSave || saving}
             >
               {saving ? "Saving…" : "Save"}

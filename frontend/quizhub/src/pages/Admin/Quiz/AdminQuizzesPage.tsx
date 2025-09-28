@@ -29,23 +29,21 @@ const AdminQuizzesPage: React.FC = () => {
     } finally { setLoading(false); }
   };
 
-  useEffect(() => { load(true); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, []);
+  useEffect(() => { load(true); }, []);
 
   const onDelete = async (id: string) => {
     const q = items.find(x => x.id === id);
     if (!q) return;
-    const ok = window.confirm(`Delete quiz "${q.name}"? This cannot be undone.`); // shows confirm dialog
+    const ok = window.confirm(`Delete quiz "${q.name}"? This cannot be undone.`);
     if (!ok) return;
 
     const snapshot = items;
     setDeletingId(id);
-    // optimistic remove
     setItems(prev => prev.filter(x => x.id !== id));
 
     try {
-      await quizzesApi.delete(id); // HTTP DELETE under the hood
+      await quizzesApi.delete(id);
     } catch (e: any) {
-      // rollback on failure
       alert(e.message ?? "Failed to delete quiz.");
       setItems(snapshot);
     } finally {

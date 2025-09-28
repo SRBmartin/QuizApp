@@ -38,11 +38,13 @@ const QuizEditorPage: React.FC = () => {
   const [err, setErr] = useState<string | null>(null);
 
   const [questions, setQuestions] = useState<Question[]>([]);
+  const [editingId, setEditingId] = useState<string | null>(null);
+
   const [qForm, setQForm] = useState<{
     question: string;
     points: number;
     type: QuestionType;
-    choices: { label: string; isCorrect: boolean }[];
+    choices: { id?: string; label: string; isCorrect: boolean }[];
     isTrueCorrect: boolean | null;
     textAnswer: string;
   }>({
@@ -56,6 +58,7 @@ const QuizEditorPage: React.FC = () => {
     isTrueCorrect: null,
     textAnswer: ""
   });
+
   const [qSaving, setQSaving] = useState(false);
   const [qErr, setQErr] = useState<string | null>(null);
 
@@ -159,44 +162,106 @@ const QuizEditorPage: React.FC = () => {
     return false;
   }, [qForm, quizId]);
 
+  const resetQFormForCreate = () => {
+    setEditingId(null);
+    setQForm(prev => ({
+      question: "",
+      points: 1,
+      type: QuestionType.Single,
+      choices: [
+        { label: "", isCorrect: false },
+        { label: "", isCorrect: false }
+      ],
+      isTrueCorrect: null,
+      textAnswer: ""
+    }));
+  };
+
+  const startEdit = (q: Question) => {
+    setEditingId(q.id);
+    if (q.type === QuestionType.TrueFalse) {
+      const trueIsCorrect = !!q.choices.find(c => c.label === "True" && c.isCorrect);
+      setQForm({
+        question: q.question,
+        points: q.points,
+        type: QuestionType.TrueFalse,
+        choices: [],
+        isTrueCorrect: trueIsCorrect,
+        textAnswer: ""
+      });
+    } else if (q.type === QuestionType.FillIn) {
+      setQForm({
+        question: q.question,
+        points: q.points,
+        type: QuestionType.FillIn,
+        choices: [],
+        isTrueCorrect: null,
+        textAnswer: q.textAnswer?.text ?? ""
+      });
+    } else {
+      setQForm({
+        question: q.question,
+        points: q.points,
+        type: q.type,
+        choices: q.choices.map(c => ({ id: c.id, label: c.label, isCorrect: c.isCorrect })),
+        isTrueCorrect: null,
+        textAnswer: ""
+      });
+    }
+  };
+
   const submitQuestion = async () => {
     if (!quizId || !canCreateQuestion) return;
     setQSaving(true); setQErr(null);
     try {
-      const payload: any = {
-        question: qForm.question.trim(),
-        points: qForm.points,
-        questionType: qForm.type
-      };
-
-      if (qForm.type === QuestionType.Single || qForm.type === QuestionType.Multi) {
-        payload.choices = qForm.choices.map(c => ({ label: c.label.trim(), isCorrect: c.isCorrect }));
-      } else if (qForm.type === QuestionType.TrueFalse) {
-        payload.isTrueCorrect = !!qForm.isTrueCorrect;
-      } else if (qForm.type === QuestionType.FillIn) {
-        payload.textAnswer = qForm.textAnswer.trim();
+      if (!editingId) {
+        const payload: any = {
+          question: qForm.question.trim(),
+          points: qForm.points,
+          questionType: qForm.type
+        };
+        if (qForm.type === QuestionType.Single || qForm.type === QuestionType.Multi) {
+          payload.choices = qForm.choices.map(c => ({ label: c.label.trim(), isCorrect: c.isCorrect }));
+        } else if (qForm.type === QuestionType.TrueFalse) {
+          payload.isTrueCorrect = !!qForm.isTrueCorrect;
+        } else if (qForm.type === QuestionType.FillIn) {
+          payload.textAnswer = qForm.textAnswer.trim();
+        }
+        const created = await questionsApi.create(quizId, payload);
+        setQuestions(prev => [created, ...prev]);
+        resetQFormForCreate();
+      } else {
+        const payload: any = {
+          question: qForm.question.trim(),
+          points: qForm.points
+        };
+        if (qForm.type === QuestionType.Single || qForm.type === QuestionType.Multi) {
+          payload.choices = qForm.choices.map(c => ({ id: c.id, label: c.label.trim(), isCorrect: c.isCorrect }));
+        } else if (qForm.type === QuestionType.TrueFalse) {
+          payload.isTrueCorrect = !!qForm.isTrueCorrect;
+        } else if (qForm.type === QuestionType.FillIn) {
+          payload.textAnswer = qForm.textAnswer.trim();
+        }
+        const updated = await questionsApi.update(editingId, payload);
+        setQuestions(prev => prev.map(x => (x.id === updated.id ? updated : x)));
+        resetQFormForCreate();
       }
-
-      const created = await questionsApi.create(quizId, payload);
-      setQuestions(prev => [created, ...prev]);
-
-      setQForm(prev => ({
-        question: "",
-        points: prev.points,
-        type: prev.type,
-        choices: (prev.type === QuestionType.Single || prev.type === QuestionType.Multi)
-          ? [
-              { label: "", isCorrect: false },
-              { label: "", isCorrect: false }
-            ]
-          : [],
-        isTrueCorrect: prev.type === QuestionType.TrueFalse ? false : null,
-        textAnswer: prev.type === QuestionType.FillIn ? "" : ""
-      }));
     } catch (e: any) {
-      setQErr(e.message ?? "Failed to create question.");
+      setQErr(e.message ?? "Failed to save question.");
     } finally {
       setQSaving(false);
+    }
+  };
+
+  const onDeleteQuestion = async (id: string) => {
+    if (!quizId) return;
+    if (!window.confirm("Delete this question?")) return;
+    try {
+      await questionsApi.delete(id);
+      setQuestions(prev => prev.filter(x => x.id !== id));
+      if (editingId === id) resetQFormForCreate();
+    } catch (e: any) {
+      setQErr(e.message ?? "Failed to delete question.");
     }
   };
 
@@ -306,7 +371,7 @@ const QuizEditorPage: React.FC = () => {
       {!isCreate && (
         <section className="qe-questions">
           <div className="q-head">
-            <h3>Add Question</h3>
+            <h3>{editingId ? "Edit Question" : "Add Question"}</h3>
           </div>
 
           {!!qErr && (
@@ -317,7 +382,7 @@ const QuizEditorPage: React.FC = () => {
             </div>
           )}
 
-          <div className="q-form">
+          <div className="q-form" aria-disabled={form.isPublished ? "true" : undefined}>
             <label>
               <span>Question</span>
               <input
@@ -325,6 +390,7 @@ const QuizEditorPage: React.FC = () => {
                 onChange={e => { setQForm({ ...qForm, question: e.target.value }); if (qErr) setQErr(null); }}
                 placeholder="Type the question…"
                 maxLength={1024}
+                disabled={form.isPublished}
               />
             </label>
 
@@ -335,6 +401,7 @@ const QuizEditorPage: React.FC = () => {
                   type="number" min={0} step={1}
                   value={qForm.points}
                   onChange={e => { setQForm({ ...qForm, points: Number(e.target.value) || 0 }); if (qErr) setQErr(null); }}
+                  disabled={form.isPublished}
                 />
               </label>
 
@@ -343,6 +410,7 @@ const QuizEditorPage: React.FC = () => {
                 <select
                   value={qForm.type}
                   onChange={e => onQTypeChange(Number(e.target.value) as QuestionType)}
+                  disabled={form.isPublished || !!editingId}
                 >
                   <option value={QuestionType.Single}>Single choice</option>
                   <option value={QuestionType.Multi}>Multiple choice</option>
@@ -361,6 +429,7 @@ const QuizEditorPage: React.FC = () => {
                       type="button"
                       className="btn ghost"
                       onClick={() => setQForm(f => ({ ...f, choices: [...f.choices, { label: "", isCorrect: false }] }))}
+                      disabled={form.isPublished}
                     >
                       + Add choice
                     </button>
@@ -369,6 +438,7 @@ const QuizEditorPage: React.FC = () => {
                         type="button"
                         className="btn ghost"
                         onClick={() => setQForm(f => ({ ...f, choices: f.choices.slice(0, -1) }))}
+                        disabled={form.isPublished}
                       >
                         − Remove last
                       </button>
@@ -389,6 +459,7 @@ const QuizEditorPage: React.FC = () => {
                           return { ...f, choices: copy };
                         });
                       }}
+                      disabled={form.isPublished}
                     />
                     <label className="inline">
                       <input
@@ -406,6 +477,7 @@ const QuizEditorPage: React.FC = () => {
                             return { ...f, choices: copy };
                           });
                         }}
+                        disabled={form.isPublished}
                       />
                       <span>Correct</span>
                     </label>
@@ -422,6 +494,7 @@ const QuizEditorPage: React.FC = () => {
                     type="button"
                     className={`chip ${qForm.isTrueCorrect === true ? "selected" : ""}`}
                     onClick={() => setQForm(f => ({ ...f, isTrueCorrect: true }))}
+                    disabled={form.isPublished}
                   >
                     True
                   </button>
@@ -429,6 +502,7 @@ const QuizEditorPage: React.FC = () => {
                     type="button"
                     className={`chip ${qForm.isTrueCorrect === false ? "selected" : ""}`}
                     onClick={() => setQForm(f => ({ ...f, isTrueCorrect: false }))}
+                    disabled={form.isPublished}
                   >
                     False
                   </button>
@@ -444,6 +518,7 @@ const QuizEditorPage: React.FC = () => {
                   onChange={e => setQForm({ ...qForm, textAnswer: e.target.value })}
                   placeholder="Type the correct text…"
                   maxLength={2048}
+                  disabled={form.isPublished}
                 />
               </label>
             )}
@@ -453,10 +528,20 @@ const QuizEditorPage: React.FC = () => {
                 type="button"
                 className="btn primary"
                 onClick={submitQuestion}
-                disabled={!canCreateQuestion || qSaving}
+                disabled={!canCreateQuestion || qSaving || form.isPublished}
               >
-                {qSaving ? "Adding…" : "Add question"}
+                {editingId ? (qSaving ? "Saving…" : "Save changes") : (qSaving ? "Adding…" : "Add question")}
               </button>
+              {editingId && (
+                <button
+                  type="button"
+                  className="btn ghost"
+                  onClick={resetQFormForCreate}
+                  disabled={qSaving}
+                >
+                  Cancel
+                </button>
+              )}
             </div>
           </div>
 
@@ -481,6 +566,10 @@ const QuizEditorPage: React.FC = () => {
                       ))}
                     </ul>
                   )}
+                  <div className="q-actions">
+                    <button className="btn ghost" onClick={() => startEdit(q)} disabled={form.isPublished}>Edit</button>
+                    <button className="btn danger" onClick={() => onDeleteQuestion(q.id)} disabled={form.isPublished}>Delete</button>
+                  </div>
                 </div>
               ))}
             </div>

@@ -97,4 +97,9 @@
       .q-choices { margin:.3rem 0 0 1rem; color:#374151; }
     }
   }
+
+  .qe-questions .q-item { position: relative; }
+  .qe-questions .q-actions { display:flex; gap:.4rem; margin-top:.5rem; }
+  .qe-questions [aria-disabled="true"] { opacity:.6; pointer-events:none; }
+  
 }

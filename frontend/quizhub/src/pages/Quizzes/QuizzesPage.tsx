@@ -29,17 +29,14 @@ const QuizzesPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Filters
   const [allTags, setAllTags] = useState<{ id: string; name: string }[]>([]);
   const [tagId, setTagId] = useState<string | null>(null);
-  const [difficulty, setDifficulty] = useState<number | null>(null); // 0=Easy,1=Medium,2=Hard; null = All
+  const [difficulty, setDifficulty] = useState<number | null>(null); //0=Easy,1=Medium,2=Hard; null = All
   const [search, setSearch] = useState<string>("");
   const debouncedSearch = useDebouncedValue(search, 350);
 
-  // Track that the initial load has completed (so filter changes can always reload)
   const didInit = useRef(false);
 
-  // Protect against out-of-order responses
   const requestIdRef = useRef(0);
 
   const load = async (reset = false) => {
@@ -54,17 +51,14 @@ const QuizzesPage: React.FC = () => {
         q: debouncedSearch?.trim() ?? null
       });
 
-      // If another request started after this one, ignore this response
       if (currentReqId !== requestIdRef.current) return;
 
       const items = page.items ?? [];
       setHasMore(items.length === PAGE_SIZE);
 
-      // Use functional state updates to avoid stale closures
       setSkip(prev => (reset ? items.length : prev + items.length));
       setData(prev => (reset ? items : [...prev, ...items]));
     } catch (e: any) {
-      // Only set error if this is the latest request
       if (currentReqId === requestIdRef.current) {
         setError(e.message ?? "Failed to load quizzes.");
       }
@@ -75,26 +69,21 @@ const QuizzesPage: React.FC = () => {
     }
   };
 
-  // Initial tags + first page
   useEffect(() => {
     (async () => {
       try {
         const tags = await tagsApi.list(0, 200);
         setAllTags(tags);
       } catch {
-        // silent fail for tags – filters still work without the list
       }
       await load(true);
-      didInit.current = true; // mark initial load completed (even if it returned 0)
+      didInit.current = true;
     })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Re-load when filters change (debounced for search)
   useEffect(() => {
-    if (!didInit.current) return; // only skip the very first render; never block based on data/skip
+    if (!didInit.current) return;
     load(true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tagId, difficulty, debouncedSearch]);
 
   const empty = useMemo(() => !loading && data.length === 0, [loading, data]);
@@ -117,7 +106,6 @@ const QuizzesPage: React.FC = () => {
         )}
       </div>
 
-      {/* Filters */}
       <div className="filters">
         <div className="f-row">
           <label className="f-label" htmlFor="quiz-search">Search</label>

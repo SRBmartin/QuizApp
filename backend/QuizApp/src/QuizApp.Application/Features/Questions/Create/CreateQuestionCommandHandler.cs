@@ -50,7 +50,7 @@ public class CreateQuestionCommandHandler (
                     var trueIsCorrect = command.IsTrueCorrect!.Value;
 
                     var tr = QuizQuestionChoice.Create(Guid.NewGuid(), question.Id, "True", trueIsCorrect);
-                    var fl = QuizQuestionChoice.Create(Guid.NewGuid(), question.Id, "False", trueIsCorrect);
+                    var fl = QuizQuestionChoice.Create(Guid.NewGuid(), question.Id, "False", !trueIsCorrect);
 
                     question.Choices.Add(tr);
                     question.Choices.Add(fl);

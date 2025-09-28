@@ -1,9 +1,12 @@
+// src/pages/Admin/Quiz/QuizEditorPage.tsx
 import React, { useEffect, useMemo, useState } from "react";
 import "./QuizEditorPage.scss";
 import { useNavigate, useParams } from "react-router-dom";
 import { quizzesApi } from "../../../services/quizzes.api";
-import type { Quiz } from "../../../models/quiz";
 import { tagsApi } from "../../../services/tags.api";
+import { questionsApi } from "../../../services/questions.api";
+import { QuestionType, Question } from "../../../models/question";
+import type { Quiz } from "../../../models/quiz";
 
 type FormState = {
   name: string;
@@ -34,6 +37,28 @@ const QuizEditorPage: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [qForm, setQForm] = useState<{
+    question: string;
+    points: number;
+    type: QuestionType;
+    choices: { label: string; isCorrect: boolean }[];
+    isTrueCorrect: boolean | null;
+    textAnswer: string;
+  }>({
+    question: "",
+    points: 1,
+    type: QuestionType.Single,
+    choices: [
+      { label: "", isCorrect: false },
+      { label: "", isCorrect: false }
+    ],
+    isTrueCorrect: null,
+    textAnswer: ""
+  });
+  const [qSaving, setQSaving] = useState(false);
+  const [qErr, setQErr] = useState<string | null>(null);
+
   useEffect(() => {
     (async () => {
       setLoading(true); setErr(null);
@@ -41,7 +66,7 @@ const QuizEditorPage: React.FC = () => {
         const tags = await tagsApi.list(0, 200);
         setAllTags(tags);
         if (!isCreate && quizId) {
-          const q = await quizzesApi.getById(quizId);
+          const q: Quiz = await quizzesApi.getById(quizId);
           const initial: FormState = {
             name: q.name,
             description: q.description ?? "",
@@ -51,8 +76,10 @@ const QuizEditorPage: React.FC = () => {
             tagIds: q.tags?.map(t => t.id) ?? [],
           };
           setForm(initial);
+          setQuestions(q.questions ?? []);
         } else {
           setForm(emptyForm);
+          setQuestions([]);
         }
       } catch (e: any) {
         setErr(e.message ?? "Failed to load data.");
@@ -92,7 +119,87 @@ const QuizEditorPage: React.FC = () => {
     } finally { setSaving(false); }
   };
 
-  // Keep the page & form even if there's an error
+  const onQTypeChange = (t: QuestionType) => {
+    setQErr(null);
+    setQForm(prev => ({
+      question: prev.question,
+      points: prev.points,
+      type: t,
+      choices:
+        t === QuestionType.Single || t === QuestionType.Multi
+          ? (prev.type === QuestionType.Single || prev.type === QuestionType.Multi)
+            ? prev.choices.length >= 2 ? prev.choices : [
+                { label: "", isCorrect: false },
+                { label: "", isCorrect: false }
+              ]
+            : [
+                { label: "", isCorrect: false },
+                { label: "", isCorrect: false }
+              ]
+          : [],
+      isTrueCorrect: t === QuestionType.TrueFalse ? (prev.type === QuestionType.TrueFalse ? prev.isTrueCorrect : false) : null,
+      textAnswer: t === QuestionType.FillIn ? (prev.type === QuestionType.FillIn ? prev.textAnswer : "") : ""
+    }));
+  };
+
+  const canCreateQuestion = useMemo(() => {
+    if (!quizId) return false;
+    const q = qForm.question.trim().length >= 3;
+    const p = Number.isFinite(qForm.points) && qForm.points >= 0;
+    if (!(q && p)) return false;
+
+    if (qForm.type === QuestionType.Single || qForm.type === QuestionType.Multi) {
+      const labelsOk = qForm.choices.length >= 2 && qForm.choices.every(c => c.label.trim().length > 0);
+      const correctCount = qForm.choices.filter(c => c.isCorrect).length;
+      if (qForm.type === QuestionType.Single) return labelsOk && correctCount === 1;
+      return labelsOk && correctCount >= 1;
+    }
+    if (qForm.type === QuestionType.TrueFalse) return qForm.isTrueCorrect !== null;
+    if (qForm.type === QuestionType.FillIn) return qForm.textAnswer.trim().length > 0;
+    return false;
+  }, [qForm, quizId]);
+
+  const submitQuestion = async () => {
+    if (!quizId || !canCreateQuestion) return;
+    setQSaving(true); setQErr(null);
+    try {
+      const payload: any = {
+        question: qForm.question.trim(),
+        points: qForm.points,
+        questionType: qForm.type
+      };
+
+      if (qForm.type === QuestionType.Single || qForm.type === QuestionType.Multi) {
+        payload.choices = qForm.choices.map(c => ({ label: c.label.trim(), isCorrect: c.isCorrect }));
+      } else if (qForm.type === QuestionType.TrueFalse) {
+        payload.isTrueCorrect = !!qForm.isTrueCorrect;
+      } else if (qForm.type === QuestionType.FillIn) {
+        payload.textAnswer = qForm.textAnswer.trim();
+      }
+
+      const created = await questionsApi.create(quizId, payload);
+      setQuestions(prev => [created, ...prev]);
+
+      setQForm(prev => ({
+        question: "",
+        points: prev.points,
+        type: prev.type,
+        choices: (prev.type === QuestionType.Single || prev.type === QuestionType.Multi)
+          ? [
+              { label: "", isCorrect: false },
+              { label: "", isCorrect: false }
+            ]
+          : [],
+        isTrueCorrect: prev.type === QuestionType.TrueFalse ? false : null,
+        textAnswer: prev.type === QuestionType.FillIn ? "" : ""
+      }));
+    } catch (e: any) {
+      setQErr(e.message ?? "Failed to create question.");
+    } finally {
+      setQSaving(false);
+    }
+  };
+
   return (
     <div className="quiz-editor">
       <header className="qe-head">
@@ -101,7 +208,6 @@ const QuizEditorPage: React.FC = () => {
 
       {loading && <div className="loading">Loading…</div>}
 
-      {/* Accessible inline error banner; stays in DOM so screen readers announce updates */}
       {!!err && (
         <div className="error-banner" role="alert" aria-live="assertive" aria-atomic="true">
           <span className="error-icon" aria-hidden>⚠️</span>
@@ -196,6 +302,191 @@ const QuizEditorPage: React.FC = () => {
           </button>
         </div>
       </form>
+
+      {!isCreate && (
+        <section className="qe-questions">
+          <div className="q-head">
+            <h3>Add Question</h3>
+          </div>
+
+          {!!qErr && (
+            <div className="error-banner" role="alert" aria-live="assertive" aria-atomic="true">
+              <span className="error-icon" aria-hidden>⚠️</span>
+              <span className="error-text">{qErr}</span>
+              <button className="error-dismiss" type="button" onClick={() => setQErr(null)} aria-label="Dismiss error">×</button>
+            </div>
+          )}
+
+          <div className="q-form">
+            <label>
+              <span>Question</span>
+              <input
+                value={qForm.question}
+                onChange={e => { setQForm({ ...qForm, question: e.target.value }); if (qErr) setQErr(null); }}
+                placeholder="Type the question…"
+                maxLength={1024}
+              />
+            </label>
+
+            <div className="row2">
+              <label>
+                <span>Points</span>
+                <input
+                  type="number" min={0} step={1}
+                  value={qForm.points}
+                  onChange={e => { setQForm({ ...qForm, points: Number(e.target.value) || 0 }); if (qErr) setQErr(null); }}
+                />
+              </label>
+
+              <label>
+                <span>Type</span>
+                <select
+                  value={qForm.type}
+                  onChange={e => onQTypeChange(Number(e.target.value) as QuestionType)}
+                >
+                  <option value={QuestionType.Single}>Single choice</option>
+                  <option value={QuestionType.Multi}>Multiple choice</option>
+                  <option value={QuestionType.TrueFalse}>True / False</option>
+                  <option value={QuestionType.FillIn}>Fill in</option>
+                </select>
+              </label>
+            </div>
+
+            {(qForm.type === QuestionType.Single || qForm.type === QuestionType.Multi) && (
+              <div className="choices">
+                <div className="choices-head">
+                  <span>Choices</span>
+                  <div className="choices-actions">
+                    <button
+                      type="button"
+                      className="btn ghost"
+                      onClick={() => setQForm(f => ({ ...f, choices: [...f.choices, { label: "", isCorrect: false }] }))}
+                    >
+                      + Add choice
+                    </button>
+                    {qForm.choices.length > 2 && (
+                      <button
+                        type="button"
+                        className="btn ghost"
+                        onClick={() => setQForm(f => ({ ...f, choices: f.choices.slice(0, -1) }))}
+                      >
+                        − Remove last
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {qForm.choices.map((c, idx) => (
+                  <div key={idx} className="choice-row">
+                    <input
+                      value={c.label}
+                      placeholder={`Choice #${idx + 1}`}
+                      onChange={e => {
+                        const v = e.target.value;
+                        setQForm(f => {
+                          const copy = [...f.choices];
+                          copy[idx] = { ...copy[idx], label: v };
+                          return { ...f, choices: copy };
+                        });
+                      }}
+                    />
+                    <label className="inline">
+                      <input
+                        type="checkbox"
+                        checked={c.isCorrect}
+                        onChange={e => {
+                          const checked = e.target.checked;
+                          setQForm(f => {
+                            let copy = [...f.choices];
+                            if (f.type === QuestionType.Single && checked) {
+                              copy = copy.map((x, i) => ({ ...x, isCorrect: i === idx }));
+                            } else {
+                              copy[idx] = { ...copy[idx], isCorrect: checked };
+                            }
+                            return { ...f, choices: copy };
+                          });
+                        }}
+                      />
+                      <span>Correct</span>
+                    </label>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {qForm.type === QuestionType.TrueFalse && (
+              <div className="tf">
+                <span>Is “True” the correct answer?</span>
+                <div className="chip-group">
+                  <button
+                    type="button"
+                    className={`chip ${qForm.isTrueCorrect === true ? "selected" : ""}`}
+                    onClick={() => setQForm(f => ({ ...f, isTrueCorrect: true }))}
+                  >
+                    True
+                  </button>
+                  <button
+                    type="button"
+                    className={`chip ${qForm.isTrueCorrect === false ? "selected" : ""}`}
+                    onClick={() => setQForm(f => ({ ...f, isTrueCorrect: false }))}
+                  >
+                    False
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {qForm.type === QuestionType.FillIn && (
+              <label>
+                <span>Expected answer</span>
+                <input
+                  value={qForm.textAnswer}
+                  onChange={e => setQForm({ ...qForm, textAnswer: e.target.value })}
+                  placeholder="Type the correct text…"
+                  maxLength={2048}
+                />
+              </label>
+            )}
+
+            <div className="actions">
+              <button
+                type="button"
+                className="btn primary"
+                onClick={submitQuestion}
+                disabled={!canCreateQuestion || qSaving}
+              >
+                {qSaving ? "Adding…" : "Add question"}
+              </button>
+            </div>
+          </div>
+
+          {questions.length > 0 && (
+            <div className="q-list">
+              <h4>Questions</h4>
+              {questions.map(q => (
+                <div className="q-item" key={q.id}>
+                  <div className="q-title">
+                    <strong>{q.question}</strong>
+                    <span className="muted"> · {QuestionType[q.type]} · {q.points} pts</span>
+                  </div>
+                  {q.type === QuestionType.FillIn && q.textAnswer?.text && (
+                    <div className="q-sub">Answer: <em>{q.textAnswer.text}</em></div>
+                  )}
+                  {(q.type === QuestionType.Single || q.type === QuestionType.Multi || q.type === QuestionType.TrueFalse) && q.choices?.length > 0 && (
+                    <ul className="q-choices">
+                      {q.choices.map(c => (
+                        <li key={c.id ?? c.label}>
+                          {c.label} {c.isCorrect ? "✓" : ""}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
     </div>
   );
 };

@@ -23,15 +23,15 @@ export interface Question {
   textAnswer?: QuestionText | null;
 }
 
-export interface Quiz {
+export type Quiz = {
   id: string;
   name: string;
   description?: string | null;
-  difficultyLevel: number;   // enum QuizLevel
+  difficultyLevel: number;
   timeInSeconds: number;
   createdAt: string;
   isPublished: boolean;
   isDeleted: boolean;
   questions: Question[];
   tags: Tag[];
-}
+};

@@ -51,6 +51,8 @@ public class QuizRepository(
             .Quizzes
             .Include(t => t.Questions)
                 .ThenInclude(c => c.Choices)
+            .Include(t => t.Questions)
+                .ThenInclude(c => c.TextAnswer)
             .Include(t => t.QuizTags)
                 .ThenInclude(c => c.Tag)
             .FirstOrDefaultAsync(t => t.Id == id, cancellationToken);

@@ -51,6 +51,7 @@ public static class DependencyInjection
         services.AddScoped<ITagRepository, TagRepository>();
         services.AddScoped<IQuizTagRepository, QuizTagRepository>();
         services.AddScoped<IQuizRepository, QuizRepository>();
+        services.AddScoped<IQuizQuestionRepository, QuizQuestionRepository>();
         
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 

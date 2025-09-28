@@ -12,4 +12,14 @@ public class QuizQuestionText
 
     #endregion
 
+    public static QuizQuestionText Create(Guid id, Guid questionId, string text)
+    {
+        return new()
+        {
+            Id = id,
+            QuestionId = questionId,
+            Text = text
+        };
+    }
+
 }

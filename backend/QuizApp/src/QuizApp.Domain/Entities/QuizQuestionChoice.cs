@@ -15,4 +15,16 @@ public class QuizQuestionChoice
 
     #endregion
 
+    public static QuizQuestionChoice Create(Guid id, Guid questionId, string  label, bool isCorrect)
+    {
+        return new()
+        {
+            Id = id,
+            QuestionId = questionId,
+            Label = label,
+            IsCorrect = isCorrect,
+            IsDeleted = false
+        };
+    }
+
 }

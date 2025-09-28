@@ -23,4 +23,27 @@ public class QuizQuestion
 
     #endregion
 
+    public static QuizQuestion Create(
+        Guid id,
+        Guid quizId,
+        Guid createdById,
+        int points,
+        QuestionType questionType,
+        string question,
+        DateTimeOffset createdAt
+    )
+    {
+        return new()
+        {
+            Id = id,
+            QuizId = quizId,
+            CreatedById = createdById,
+            Points = points,
+            Type = questionType,
+            Question = question,
+            CreatedAt = createdAt,
+            IsDeleted = false
+        };
+    }
+
 }

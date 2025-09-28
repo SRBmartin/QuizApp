@@ -13,4 +13,6 @@ public class QuestionDto : IMapFrom<QuizQuestion>
     public string Question { get; set; } = default!;
     public DateTimeOffset CreatedAt { get; set; }
     public bool IsDeleted { get; set; }
+    public List<QuestionChoiceDto> Choices { get; set; } = new();
+    public QuestionTextDto? TextAnswer { get; set; }
 }

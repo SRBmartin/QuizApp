@@ -26,5 +26,10 @@ public class QuizQuestionChoice
             IsDeleted = false
         };
     }
+    
+    public void Delete()
+    {
+        IsDeleted = true;
+    }
 
 }

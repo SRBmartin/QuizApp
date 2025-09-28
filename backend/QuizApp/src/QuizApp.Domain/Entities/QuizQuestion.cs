@@ -46,4 +46,14 @@ public class QuizQuestion
         };
     }
 
+    public void Delete()
+    {
+        IsDeleted = true;
+
+        foreach (var c in Choices)
+        {
+            c.Delete();
+        }
+    }
+
 }

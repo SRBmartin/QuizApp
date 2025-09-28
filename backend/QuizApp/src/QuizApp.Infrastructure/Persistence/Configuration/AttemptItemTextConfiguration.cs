@@ -11,6 +11,8 @@ public class AttemptItemTextConfiguration : IEntityTypeConfiguration<AttemptItem
         builder.ToTable("AttemptItemTexts");
         builder.HasKey(x => x.AttemptItemId);
 
-        builder.Property(x => x.SubmittedText).IsRequired();
+        builder.Property(x => x.SubmittedText)
+            .HasMaxLength(1024)
+            .IsRequired();
     }
 }

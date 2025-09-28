@@ -24,4 +24,12 @@ public class QuizQuestionRepository(
             .Include(t => t.TextAnswer)
             .FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
     }
+
+    public async Task<int> CountByQuizIdAsync(Guid quizId, CancellationToken cancellationToken)
+    {
+        return await dbContext
+            .QuizQuestions
+            .CountAsync(t => t.QuizId == quizId, cancellationToken);
+    }
+
 }

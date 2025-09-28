@@ -18,6 +18,7 @@ public class QuizDto : IMapFrom<Quiz>
     public bool IsPublished { get; set; }
     public bool IsDeleted { get; set; }
 
+    public int? QuestionCount { get; set; }
     public List<QuestionDto> Questions { get; set; }
     public List<TagDto> Tags { get; set; } = new();
 

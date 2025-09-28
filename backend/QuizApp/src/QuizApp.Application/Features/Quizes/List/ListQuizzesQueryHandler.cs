@@ -11,6 +11,7 @@ namespace QuizApp.Application.Features.Quizes.List;
 
 public class ListQuizzesQueryHandler (
     IQuizRepository quizRepository,
+    IQuizQuestionRepository quizQuestionRepository,
     IQuizTagRepository quizTagRepository,
     IMapper mapper,
     ICurrentUser currentUser
@@ -33,6 +34,9 @@ public class ListQuizzesQueryHandler (
 
         foreach (var dto in dtos)
         {
+            var questionsCount = await quizQuestionRepository.CountByQuizIdAsync(dto.Id, cancellationToken);
+            dto.QuestionCount = questionsCount;
+
             if (tagsByQuiz.TryGetValue(dto.Id, out var tagEntities))
                 dto.Tags = tagEntities.Select(t => mapper.Map<TagDto>(t)).ToList();
             else

@@ -32,6 +32,7 @@ export type Quiz = {
   createdAt: string;
   isPublished: boolean;
   isDeleted: boolean;
+  questionCount?: number;
   questions: Question[];
   tags: Tag[];
 };

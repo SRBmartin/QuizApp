@@ -33,14 +33,14 @@ const QuizzesPage: React.FC = () => {
     }
   };
 
-  useEffect(() => { load(true); /* first load */ }, []);
+  useEffect(() => { load(true); }, []);
 
   const empty = useMemo(() => !loading && data.length === 0, [loading, data]);
 
   return (
     <div className="quizzes-page">
       <div className="list-head">
-        <h2>Quizzes</h2>
+        <h2 className="title">Quizzes</h2>
         {isAdmin && (
           <div className="admin-actions">
             <button className="btn primary" onClick={() => navigate("/admin/quizzes")}>
@@ -53,31 +53,43 @@ const QuizzesPage: React.FC = () => {
         )}
       </div>
 
-      <div className="quiz-grid" role="list">
-        {data.map(q => (
-          <article key={q.id} className="quiz-card" role="listitem">
-            <header className="qc-head">
-              <h3><Link to={`/quiz/${q.id}`}>{q.name}</Link></h3>
-              <span className={`pill lvl-${q.difficultyLevel}`} aria-label="Difficulty">
-                {["Easy","Medium","Hard"][q.difficultyLevel] ?? `Level ${q.difficultyLevel}`}
-              </span>
-            </header>
-            <p className="qc-desc">{q.description ?? "No description."}</p>
-            {q.tags?.length ? (
-              <div className="qc-tags">
-                {q.tags.map(t => <span className="tag" key={t.id}>{t.name}</span>)}
+      <div className="quiz-list" role="list">
+        {data.map(q => {
+          const mins = Math.max(1, Math.round(q.timeInSeconds / 60));
+          const count = q.questionCount ?? q.questions?.length ?? 0;
+          return (
+            <article key={q.id} className="quiz-row" role="listitem">
+              <div className="qr-main">
+                <h3 className="qr-title">
+                  <Link to={`/quiz/${q.id}`}>{q.name}</Link>
+                </h3>
+                <p className="qr-desc">{q.description ?? "No description."}</p>
+                {q.tags?.length ? (
+                  <div className="qr-tags">
+                    {q.tags.map(t => <span className="tag" key={t.id}>{t.name}</span>)}
+                  </div>
+                ) : (
+                  <div className="qr-tags qr-tags--empty">No tags</div>
+                )}
               </div>
-            ) : <div className="qc-tags qc-tags--empty">No tags</div>}
-            <footer className="qc-foot">
-              <span className="muted">{Math.round(q.timeInSeconds/60)} min • {q.questions?.length ?? 0} questions</span>
-              {isAdmin && (
-                <button className="btn ghost small" onClick={() => navigate(`/admin/quizzes/${q.id}`)}>
-                  Open in admin
-                </button>
-              )}
-            </footer>
-          </article>
-        ))}
+
+              <div className="qr-meta">
+                <span className={`pill lvl-${q.difficultyLevel}`} aria-label="Difficulty">
+                  {["Easy","Medium","Hard"][q.difficultyLevel] ?? `Level ${q.difficultyLevel}`}
+                </span>
+                <div className="qr-stats">
+                  <span className="mins">{mins} min</span>
+                  <span className="count">{count} {count === 1 ? "question" : "questions"}</span>
+                </div>
+                {isAdmin && (
+                  <button className="btn ghost small" onClick={() => navigate(`/admin/quizzes/${q.id}`)}>
+                    Open in admin
+                  </button>
+                )}
+              </div>
+            </article>
+          );
+        })}
       </div>
 
       {empty && <div className="empty">No quizzes yet.</div>}

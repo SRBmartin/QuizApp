@@ -39,14 +39,23 @@ public class QuizRepository(
         return await dbContext
             .Quizzes
             .Include(t => t.Questions)
+            .ThenInclude(c => c.Choices)
             .FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
     }
 
-    public async Task<List<Quiz>> ListAsync(int skip, int take, CancellationToken cancellationToken)
+    public async Task<List<Quiz>> ListAsync(int skip, int take, bool includeUnpublished, CancellationToken cancellationToken)
     {
-        return await dbContext
+        var query = dbContext
             .Quizzes
             .OrderByDescending(t => t.CreatedAt)
+            .AsQueryable();
+
+        if (!includeUnpublished)
+        {
+            query = query.Where(t => t.IsPublished);
+        }
+
+        return await query
             .Skip(skip)
             .Take(take)
             .ToListAsync(cancellationToken);

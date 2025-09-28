@@ -9,5 +9,5 @@ public interface IQuizRepository
     Task<bool> ExistsByNameAsync(string name, CancellationToken cancellationToken);
 
     Task<int> CountAsync(CancellationToken cancellationToken);
-    Task<List<Quiz>> ListAsync(int skip, int take, CancellationToken cancellationToken);
+    Task<List<Quiz>> ListAsync(int skip, int take, bool includeUnpublished, CancellationToken cancellationToken);
 }

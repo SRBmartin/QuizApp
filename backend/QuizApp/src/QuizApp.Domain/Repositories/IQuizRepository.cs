@@ -1,4 +1,5 @@
 ﻿using QuizApp.Domain.Entities;
+using QuizApp.Domain.Enums;
 
 namespace QuizApp.Domain.Repositories;
 
@@ -10,5 +11,6 @@ public interface IQuizRepository
     Task<bool> ExistsByNameExceptIdAsync(string name, Guid exceptId, CancellationToken cancellationToken);
 
     Task<int> CountAsync(CancellationToken cancellationToken);
-    Task<List<Quiz>> ListAsync(int skip, int take, bool includeUnpublished, CancellationToken cancellationToken);
+    Task<int> CountAsync(bool includeUnpublished, Guid? tagId, QuizLevel? difficulty, string? search, CancellationToken cancellationToken);
+    Task<List<Quiz>> ListAsync(int skip, int take, bool includeUnpublished, Guid? tagId, QuizLevel? difficulty, string? search, CancellationToken cancellationToken);
 }

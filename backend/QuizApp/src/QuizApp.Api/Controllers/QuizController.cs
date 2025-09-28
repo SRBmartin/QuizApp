@@ -9,6 +9,7 @@ using QuizApp.Application.Features.Quizes.GetById;
 using QuizApp.Application.Features.Quizes.List;
 using QuizApp.Application.Features.Quizes.Update;
 using QuizApp.Application.Features.Quizes.UpdateTags;
+using QuizApp.Domain.Enums;
 
 namespace QuizApp.Api.Controllers;
 
@@ -65,9 +66,14 @@ public class QuizController (
     }
 
     [HttpGet]
-    public async Task<IActionResult> ListAll([FromQuery] int? skip, [FromQuery] int? take, CancellationToken cancellationToken)
+    public async Task<IActionResult> ListAll([FromQuery] int? skip,
+        [FromQuery] int? take,
+        [FromQuery] Guid? tagId,
+        [FromQuery] QuizLevel? difficulty,
+        [FromQuery(Name = "q")] string? search,
+        CancellationToken cancellationToken)
     {
-        var query = new ListQuizzesQuery(skip, take);
+        var query = new ListQuizzesQuery(skip, take, tagId, difficulty, search);
 
         var result = await mediator.Send(query, cancellationToken);
 

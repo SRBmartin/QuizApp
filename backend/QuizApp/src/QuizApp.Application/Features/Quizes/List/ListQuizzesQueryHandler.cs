@@ -25,7 +25,7 @@ public class ListQuizzesQueryHandler (
         var includeUnpublished = currentUser.IsAuthenticated && currentUser.Role!.Equals("Admin");
 
         var total = await quizRepository.CountAsync(cancellationToken);
-        var items = await quizRepository.ListAsync(skip, take, includeUnpublished, cancellationToken);
+        var items = await quizRepository.ListAsync(skip, take, includeUnpublished, query.TagId, query.Difficulty, query.Search, cancellationToken);
 
         var dtos = items.Select(i => mapper.Map<QuizDto>(i)).ToList();
 

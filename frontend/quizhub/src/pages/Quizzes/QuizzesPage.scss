@@ -51,4 +51,52 @@
   .list-foot { margin-top: 1rem; display: flex; justify-content: center; }
   .btn.more { border: 1px solid #dbe1ea; background:#fff; border-radius: 10px; padding:.5rem .9rem; }
   .empty, .error { padding:1rem; text-align:center; color:#6b7280; }
+
+  .filters {
+    display: grid;
+    gap: .6rem;
+    margin: .25rem 0 1rem 0;
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 10px 30px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.05);
+    padding: .75rem .9rem;
+
+    .f-row { display: grid; gap: .35rem; }
+    .f-label { font-weight: 700; color: #374151; }
+
+    .f-input {
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      padding: .55rem .6rem;
+      outline: none;
+      width: 100%;
+    }
+
+    .chip-group {
+      display: flex;
+      gap: .35rem;
+      flex-wrap: wrap;
+
+      .chip {
+        border: 1px solid #e5e7eb;
+        padding: .3rem .6rem;
+        border-radius: 999px;
+        background: #fff;
+        cursor: pointer;
+        user-select: none;
+      }
+      .chip.selected {
+        background: #2563eb;
+        color: #fff;
+        border-color: #2563eb;
+      }
+    }
+
+    .scroll-x {
+      overflow-x: auto;
+      white-space: nowrap;
+      padding-bottom: .1rem;
+    }
+  }
+
 }

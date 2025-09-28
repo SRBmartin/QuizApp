@@ -18,8 +18,22 @@ type Paged<T> = {
 };
 
 export const quizzesApi = {
-  async list(skip?: number, take?: number): Promise<Paged<Quiz>> {
-    const query = qs({ skip, take });
+  async list(
+    skip: number,
+    take: number,
+    opts?: { tagId?: string | null; difficulty?: number | null; q?: string | null }
+  ): Promise<Paged<Quiz>> {
+    const query = qs({
+      skip,
+      take,
+      tagId: opts?.tagId || undefined,
+      difficulty:
+        opts?.difficulty !== undefined && opts?.difficulty !== null
+          ? opts.difficulty
+          : undefined,
+      q: opts?.q?.trim() ? opts.q.trim() : undefined,
+    });
+
     return http<Paged<Quiz>>(`/api/Quiz${query}`, { method: "GET" });
   },
 

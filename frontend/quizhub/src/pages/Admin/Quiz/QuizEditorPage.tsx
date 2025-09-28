@@ -1,4 +1,3 @@
-// src/pages/Admin/Quiz/QuizEditorPage.tsx
 import React, { useEffect, useMemo, useState } from "react";
 import "./QuizEditorPage.scss";
 import { useNavigate, useParams } from "react-router-dom";
@@ -36,6 +35,9 @@ const QuizEditorPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+
+  // NEW: track persisted (server) published flag separately from form
+  const [persistedPublished, setPersistedPublished] = useState(false);
 
   const [questions, setQuestions] = useState<Question[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -80,9 +82,11 @@ const QuizEditorPage: React.FC = () => {
           };
           setForm(initial);
           setQuestions(q.questions ?? []);
+          setPersistedPublished(q.isPublished); // <-- persisted state
         } else {
           setForm(emptyForm);
           setQuestions([]);
+          setPersistedPublished(false);
         }
       } catch (e: any) {
         setErr(e.message ?? "Failed to load data.");
@@ -91,6 +95,9 @@ const QuizEditorPage: React.FC = () => {
   }, [quizId, isCreate]);
 
   const canSave = useMemo(() => form.name.trim().length >= 2 && form.timeInSeconds > 0, [form]);
+
+  // Overlay uses persisted state ONLY (so toggling checkbox won't lock you out)
+  const lockActive = !isCreate && persistedPublished;
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -105,6 +112,8 @@ const QuizEditorPage: React.FC = () => {
           timeInSeconds: form.timeInSeconds,
         });
         if (form.tagIds.length) await quizzesApi.updateTags(created.id, form.tagIds);
+        // persisted state is false on creation until server says otherwise
+        setPersistedPublished(created.isPublished ?? false);
         navigate(`/admin/quizzes/${created.id}`, { replace: true });
       } else if (quizId) {
         const updated = await quizzesApi.update(quizId, {
@@ -115,6 +124,8 @@ const QuizEditorPage: React.FC = () => {
           isPublished: form.isPublished,
         });
         await quizzesApi.updateTags(updated.id, form.tagIds);
+        // reflect server truth after save
+        setPersistedPublished(updated.isPublished);
         navigate(`/admin/quizzes/${updated.id}`);
       }
     } catch (e: any) {
@@ -146,7 +157,7 @@ const QuizEditorPage: React.FC = () => {
   };
 
   const canCreateQuestion = useMemo(() => {
-    if (!quizId) return false;
+    if (!quizId || lockActive) return false;
     const q = qForm.question.trim().length >= 3;
     const p = Number.isFinite(qForm.points) && qForm.points >= 0;
     if (!(q && p)) return false;
@@ -160,11 +171,11 @@ const QuizEditorPage: React.FC = () => {
     if (qForm.type === QuestionType.TrueFalse) return qForm.isTrueCorrect !== null;
     if (qForm.type === QuestionType.FillIn) return qForm.textAnswer.trim().length > 0;
     return false;
-  }, [qForm, quizId]);
+  }, [qForm, quizId, lockActive]);
 
   const resetQFormForCreate = () => {
     setEditingId(null);
-    setQForm(prev => ({
+    setQForm({
       question: "",
       points: 1,
       type: QuestionType.Single,
@@ -174,7 +185,7 @@ const QuizEditorPage: React.FC = () => {
       ],
       isTrueCorrect: null,
       textAnswer: ""
-    }));
+    });
   };
 
   const startEdit = (q: Question) => {
@@ -254,7 +265,7 @@ const QuizEditorPage: React.FC = () => {
   };
 
   const onDeleteQuestion = async (id: string) => {
-    if (!quizId) return;
+    if (!quizId || lockActive) return;
     if (!window.confirm("Delete this question?")) return;
     try {
       await questionsApi.delete(id);
@@ -281,300 +292,320 @@ const QuizEditorPage: React.FC = () => {
         </div>
       )}
 
-      <form className="qe-form" onSubmit={onSubmit} aria-describedby={err ? "qe-error" : undefined}>
-        <label>
-          <span>Title</span>
-          <input
-            value={form.name}
-            onChange={e => { setForm({ ...form, name: e.target.value }); if (err) setErr(null); }}
-            placeholder="e.g. European Capitals"
-            maxLength={128}
-            required
-          />
-        </label>
+      <div className={`lock-wrap ${lockActive ? "is-locked" : ""}`}>
+        {lockActive && <div className="lock-banner">Published · read-only</div>}
 
-        <label>
-          <span>Description</span>
-          <textarea
-            value={form.description}
-            onChange={e => { setForm({ ...form, description: e.target.value }); if (err) setErr(null); }}
-            placeholder="Short summary"
-            maxLength={1024}
-          />
-        </label>
-
-        <label>
-          <span>Difficulty</span>
-          <select
-            value={form.difficultyLevel}
-            onChange={e => { setForm({ ...form, difficultyLevel: Number(e.target.value) }); if (err) setErr(null); }}>
-            <option value={0}>Easy</option>
-            <option value={1}>Medium</option>
-            <option value={2}>Hard</option>
-          </select>
-        </label>
-
-        <label>
-          <span>Time (seconds)</span>
-          <input
-            type="number" min={30} step={30}
-            value={form.timeInSeconds}
-            onChange={e => { setForm({ ...form, timeInSeconds: Number(e.target.value) }); if (err) setErr(null); }}
-          />
-        </label>
-
-        {!isCreate && (
-          <label className="inline">
+        <form className="qe-form" onSubmit={onSubmit}>
+          <label>
+            <span>Title</span>
             <input
-              type="checkbox"
-              checked={form.isPublished}
-              onChange={e => { setForm({ ...form, isPublished: e.target.checked }); if (err) setErr(null); }} />
-            <span>Published</span>
+              value={form.name}
+              onChange={e => { setForm({ ...form, name: e.target.value }); if (err) setErr(null); }}
+              placeholder="e.g. European Capitals"
+              maxLength={128}
+              required
+              disabled={lockActive}
+            />
           </label>
-        )}
 
-        <label>
-          <span>Tags</span>
-          <div className="tags-picker">
-            {allTags.map(t => {
-              const selected = form.tagIds.includes(t.id);
-              return (
-                <button
-                  type="button"
-                  key={t.id}
-                  className={`chip ${selected ? "selected" : ""}`}
-                  onClick={() => {
-                    setForm(f => ({
-                      ...f,
-                      tagIds: selected ? f.tagIds.filter(x => x !== t.id) : [...f.tagIds, t.id],
-                    }));
-                    if (err) setErr(null);
-                  }}
-                >
-                  {t.name}
-                </button>
-              );
-            })}
-          </div>
-        </label>
+          <label>
+            <span>Description</span>
+            <textarea
+              value={form.description}
+              onChange={e => { setForm({ ...form, description: e.target.value }); if (err) setErr(null); }}
+              placeholder="Short summary"
+              maxLength={1024}
+              disabled={lockActive}
+            />
+          </label>
 
-        <div className="actions">
-          <button className="btn primary" type="submit" disabled={!canSave || saving}>
-            {saving ? "Saving…" : "Save"}
-          </button>
-          <button className="btn ghost" type="button" onClick={() => navigate(-1)}>
-            Cancel
-          </button>
-        </div>
-      </form>
+          <label>
+            <span>Difficulty</span>
+            <select
+              value={form.difficultyLevel}
+              onChange={e => { setForm({ ...form, difficultyLevel: Number(e.target.value) }); if (err) setErr(null); }}
+              disabled={lockActive}
+            >
+              <option value={0}>Easy</option>
+              <option value={1}>Medium</option>
+              <option value={2}>Hard</option>
+            </select>
+          </label>
 
-      {!isCreate && (
-        <section className="qe-questions">
-          <div className="q-head">
-            <h3>{editingId ? "Edit Question" : "Add Question"}</h3>
-          </div>
+          <label>
+            <span>Time (seconds)</span>
+            <input
+              type="number" min={30} step={30}
+              value={form.timeInSeconds}
+              onChange={e => { setForm({ ...form, timeInSeconds: Number(e.target.value) }); if (err) setErr(null); }}
+              disabled={lockActive}
+            />
+          </label>
 
-          {!!qErr && (
-            <div className="error-banner" role="alert" aria-live="assertive" aria-atomic="true">
-              <span className="error-icon" aria-hidden>⚠️</span>
-              <span className="error-text">{qErr}</span>
-              <button className="error-dismiss" type="button" onClick={() => setQErr(null)} aria-label="Dismiss error">×</button>
-            </div>
+          {!isCreate && (
+            <label className="inline" data-allow>
+              <input
+                type="checkbox"
+                checked={form.isPublished}
+                onChange={e => { setForm({ ...form, isPublished: e.target.checked }); if (err) setErr(null); }}
+                // NOTE: never disable the publish toggle; you can always un/publish
+              />
+              <span>Published</span>
+            </label>
           )}
 
-          <div className="q-form" aria-disabled={form.isPublished ? "true" : undefined}>
-            <label>
-              <span>Question</span>
-              <input
-                value={qForm.question}
-                onChange={e => { setQForm({ ...qForm, question: e.target.value }); if (qErr) setQErr(null); }}
-                placeholder="Type the question…"
-                maxLength={1024}
-                disabled={form.isPublished}
-              />
-            </label>
+          <label>
+            <span>Tags</span>
+            <div className="tags-picker">
+              {allTags.map(t => {
+                const selected = form.tagIds.includes(t.id);
+                return (
+                  <button
+                    type="button"
+                    key={t.id}
+                    className={`chip ${selected ? "selected" : ""}`}
+                    onClick={() => {
+                      setForm(f => ({
+                        ...f,
+                        tagIds: selected ? f.tagIds.filter(x => x !== t.id) : [...f.tagIds, t.id],
+                      }));
+                      if (err) setErr(null);
+                    }}
+                    disabled={lockActive}
+                    aria-disabled={lockActive ? "true" : undefined}
+                  >
+                    {t.name}
+                  </button>
+                );
+              })}
+            </div>
+          </label>
 
-            <div className="row2">
+          <div className="actions">
+            <button className="btn primary" type="submit" data-allow
+              // Allow save even when overlay is on (for publish/unpublish)
+              disabled={!canSave || saving}
+            >
+              {saving ? "Saving…" : "Save"}
+            </button>
+            <button className="btn ghost" type="button" onClick={() => navigate(-1)} data-allow>
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+
+      {!isCreate && (
+        <div className={`lock-wrap ${lockActive ? "is-locked" : ""}`}>
+          {lockActive && <div className="lock-banner">Published · read-only</div>}
+
+          <section className="qe-questions" aria-disabled={lockActive ? "true" : undefined}>
+            <div className="q-head">
+              <h3>{editingId ? "Edit Question" : "Add Question"}</h3>
+            </div>
+
+            {!!qErr && (
+              <div className="error-banner" role="alert" aria-live="assertive" aria-atomic="true">
+                <span className="error-icon" aria-hidden>⚠️</span>
+                <span className="error-text">{qErr}</span>
+                <button className="error-dismiss" type="button" onClick={() => setQErr(null)} aria-label="Dismiss error">×</button>
+              </div>
+            )}
+
+            <div className="q-form">
               <label>
-                <span>Points</span>
+                <span>Question</span>
                 <input
-                  type="number" min={0} step={1}
-                  value={qForm.points}
-                  onChange={e => { setQForm({ ...qForm, points: Number(e.target.value) || 0 }); if (qErr) setQErr(null); }}
-                  disabled={form.isPublished}
+                  value={qForm.question}
+                  onChange={e => { setQForm({ ...qForm, question: e.target.value }); if (qErr) setQErr(null); }}
+                  placeholder="Type the question…"
+                  maxLength={1024}
+                  disabled={lockActive}
                 />
               </label>
 
-              <label>
-                <span>Type</span>
-                <select
-                  value={qForm.type}
-                  onChange={e => onQTypeChange(Number(e.target.value) as QuestionType)}
-                  disabled={form.isPublished || !!editingId}
-                >
-                  <option value={QuestionType.Single}>Single choice</option>
-                  <option value={QuestionType.Multi}>Multiple choice</option>
-                  <option value={QuestionType.TrueFalse}>True / False</option>
-                  <option value={QuestionType.FillIn}>Fill in</option>
-                </select>
-              </label>
-            </div>
+              <div className="row2">
+                <label>
+                  <span>Points</span>
+                  <input
+                    type="number" min={0} step={1}
+                    value={qForm.points}
+                    onChange={e => { setQForm({ ...qForm, points: Number(e.target.value) || 0 }); if (qErr) setQErr(null); }}
+                    disabled={lockActive}
+                  />
+                </label>
 
-            {(qForm.type === QuestionType.Single || qForm.type === QuestionType.Multi) && (
-              <div className="choices">
-                <div className="choices-head">
-                  <span>Choices</span>
-                  <div className="choices-actions">
-                    <button
-                      type="button"
-                      className="btn ghost"
-                      onClick={() => setQForm(f => ({ ...f, choices: [...f.choices, { label: "", isCorrect: false }] }))}
-                      disabled={form.isPublished}
-                    >
-                      + Add choice
-                    </button>
-                    {qForm.choices.length > 2 && (
+                <label>
+                  <span>Type</span>
+                  <select
+                    value={qForm.type}
+                    onChange={e => onQTypeChange(Number(e.target.value) as QuestionType)}
+                    disabled={lockActive || !!editingId}
+                  >
+                    <option value={QuestionType.Single}>Single choice</option>
+                    <option value={QuestionType.Multi}>Multiple choice</option>
+                    <option value={QuestionType.TrueFalse}>True / False</option>
+                    <option value={QuestionType.FillIn}>Fill in</option>
+                  </select>
+                </label>
+              </div>
+
+              {(qForm.type === QuestionType.Single || qForm.type === QuestionType.Multi) && (
+                <div className="choices">
+                  <div className="choices-head">
+                    <span>Choices</span>
+                    <div className="choices-actions">
                       <button
                         type="button"
                         className="btn ghost"
-                        onClick={() => setQForm(f => ({ ...f, choices: f.choices.slice(0, -1) }))}
-                        disabled={form.isPublished}
+                        onClick={() => setQForm(f => ({ ...f, choices: [...f.choices, { label: "", isCorrect: false }] }))}
+                        disabled={lockActive}
                       >
-                        − Remove last
+                        + Add choice
                       </button>
-                    )}
+                      {qForm.choices.length > 2 && (
+                        <button
+                          type="button"
+                          className="btn ghost"
+                          onClick={() => setQForm(f => ({ ...f, choices: f.choices.slice(0, -1) }))}
+                          disabled={lockActive}
+                        >
+                          − Remove last
+                        </button>
+                      )}
+                    </div>
                   </div>
-                </div>
 
-                {qForm.choices.map((c, idx) => (
-                  <div key={idx} className="choice-row">
-                    <input
-                      value={c.label}
-                      placeholder={`Choice #${idx + 1}`}
-                      onChange={e => {
-                        const v = e.target.value;
-                        setQForm(f => {
-                          const copy = [...f.choices];
-                          copy[idx] = { ...copy[idx], label: v };
-                          return { ...f, choices: copy };
-                        });
-                      }}
-                      disabled={form.isPublished}
-                    />
-                    <label className="inline">
+                  {qForm.choices.map((c, idx) => (
+                    <div key={idx} className="choice-row">
                       <input
-                        type="checkbox"
-                        checked={c.isCorrect}
+                        value={c.label}
+                        placeholder={`Choice #${idx + 1}`}
                         onChange={e => {
-                          const checked = e.target.checked;
+                          const v = e.target.value;
                           setQForm(f => {
-                            let copy = [...f.choices];
-                            if (f.type === QuestionType.Single && checked) {
-                              copy = copy.map((x, i) => ({ ...x, isCorrect: i === idx }));
-                            } else {
-                              copy[idx] = { ...copy[idx], isCorrect: checked };
-                            }
+                            const copy = [...f.choices];
+                            copy[idx] = { ...copy[idx], label: v };
                             return { ...f, choices: copy };
                           });
                         }}
-                        disabled={form.isPublished}
+                        disabled={lockActive}
                       />
-                      <span>Correct</span>
-                    </label>
+                      <label className="inline">
+                        <input
+                          type="checkbox"
+                          checked={c.isCorrect}
+                          onChange={e => {
+                            const checked = e.target.checked;
+                            setQForm(f => {
+                              let copy = [...f.choices];
+                              if (f.type === QuestionType.Single && checked) {
+                                copy = copy.map((x, i) => ({ ...x, isCorrect: i === idx }));
+                              } else {
+                                copy[idx] = { ...copy[idx], isCorrect: checked };
+                              }
+                              return { ...f, choices: copy };
+                            });
+                          }}
+                          disabled={lockActive}
+                        />
+                        <span>Correct</span>
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {qForm.type === QuestionType.TrueFalse && (
+                <div className="tf">
+                  <span>Is “True” the correct answer?</span>
+                  <div className="chip-group">
+                    <button
+                      type="button"
+                      className={`chip ${qForm.isTrueCorrect === true ? "selected" : ""}`}
+                      onClick={() => setQForm(f => ({ ...f, isTrueCorrect: true }))}
+                      disabled={lockActive}
+                    >
+                      True
+                    </button>
+                    <button
+                      type="button"
+                      className={`chip ${qForm.isTrueCorrect === false ? "selected" : ""}`}
+                      onClick={() => setQForm(f => ({ ...f, isTrueCorrect: false }))}
+                      disabled={lockActive}
+                    >
+                      False
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {qForm.type === QuestionType.FillIn && (
+                <label>
+                  <span>Expected answer</span>
+                  <input
+                    value={qForm.textAnswer}
+                    onChange={e => setQForm({ ...qForm, textAnswer: e.target.value })}
+                    placeholder="Type the correct text…"
+                    maxLength={2048}
+                    disabled={lockActive}
+                  />
+                </label>
+              )}
+
+              <div className="actions">
+                <button
+                  type="button"
+                  className="btn primary"
+                  onClick={submitQuestion}
+                  disabled={!canCreateQuestion || qSaving || lockActive}
+                >
+                  {editingId ? (qSaving ? "Saving…" : "Save changes") : (qSaving ? "Adding…" : "Add question")}
+                </button>
+                {editingId && (
+                  <button
+                    type="button"
+                    className="btn ghost"
+                    onClick={resetQFormForCreate}
+                    disabled={qSaving || lockActive}
+                  >
+                    Cancel
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {questions.length > 0 && (
+              <div className="q-list">
+                <h4>Questions</h4>
+                {questions.map(q => (
+                  <div className="q-item" key={q.id}>
+                    <div className="q-title">
+                      <strong>{q.question}</strong>
+                      <span className="muted"> · {QuestionType[q.type]} · {q.points} pts</span>
+                    </div>
+                    {q.type === QuestionType.FillIn && q.textAnswer?.text && (
+                      <div className="q-sub">Answer: <em>{q.textAnswer.text}</em></div>
+                    )}
+                    {(q.type === QuestionType.Single || q.type === QuestionType.Multi || q.type === QuestionType.TrueFalse) && q.choices?.length > 0 && (
+                      <ul className="q-choices">
+                        {q.choices.map(c => (
+                          <li key={c.id ?? c.label}>
+                            {c.label} {c.isCorrect ? "✓" : ""}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                    <div className="q-actions">
+                      <button className="btn ghost" onClick={() => startEdit(q)} disabled={lockActive}>Edit</button>
+                      <button className="btn danger" onClick={() => onDeleteQuestion(q.id)} disabled={lockActive}>Delete</button>
+                    </div>
                   </div>
                 ))}
               </div>
             )}
-
-            {qForm.type === QuestionType.TrueFalse && (
-              <div className="tf">
-                <span>Is “True” the correct answer?</span>
-                <div className="chip-group">
-                  <button
-                    type="button"
-                    className={`chip ${qForm.isTrueCorrect === true ? "selected" : ""}`}
-                    onClick={() => setQForm(f => ({ ...f, isTrueCorrect: true }))}
-                    disabled={form.isPublished}
-                  >
-                    True
-                  </button>
-                  <button
-                    type="button"
-                    className={`chip ${qForm.isTrueCorrect === false ? "selected" : ""}`}
-                    onClick={() => setQForm(f => ({ ...f, isTrueCorrect: false }))}
-                    disabled={form.isPublished}
-                  >
-                    False
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {qForm.type === QuestionType.FillIn && (
-              <label>
-                <span>Expected answer</span>
-                <input
-                  value={qForm.textAnswer}
-                  onChange={e => setQForm({ ...qForm, textAnswer: e.target.value })}
-                  placeholder="Type the correct text…"
-                  maxLength={2048}
-                  disabled={form.isPublished}
-                />
-              </label>
-            )}
-
-            <div className="actions">
-              <button
-                type="button"
-                className="btn primary"
-                onClick={submitQuestion}
-                disabled={!canCreateQuestion || qSaving || form.isPublished}
-              >
-                {editingId ? (qSaving ? "Saving…" : "Save changes") : (qSaving ? "Adding…" : "Add question")}
-              </button>
-              {editingId && (
-                <button
-                  type="button"
-                  className="btn ghost"
-                  onClick={resetQFormForCreate}
-                  disabled={qSaving}
-                >
-                  Cancel
-                </button>
-              )}
-            </div>
-          </div>
-
-          {questions.length > 0 && (
-            <div className="q-list">
-              <h4>Questions</h4>
-              {questions.map(q => (
-                <div className="q-item" key={q.id}>
-                  <div className="q-title">
-                    <strong>{q.question}</strong>
-                    <span className="muted"> · {QuestionType[q.type]} · {q.points} pts</span>
-                  </div>
-                  {q.type === QuestionType.FillIn && q.textAnswer?.text && (
-                    <div className="q-sub">Answer: <em>{q.textAnswer.text}</em></div>
-                  )}
-                  {(q.type === QuestionType.Single || q.type === QuestionType.Multi || q.type === QuestionType.TrueFalse) && q.choices?.length > 0 && (
-                    <ul className="q-choices">
-                      {q.choices.map(c => (
-                        <li key={c.id ?? c.label}>
-                          {c.label} {c.isCorrect ? "✓" : ""}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                  <div className="q-actions">
-                    <button className="btn ghost" onClick={() => startEdit(q)} disabled={form.isPublished}>Edit</button>
-                    <button className="btn danger" onClick={() => onDeleteQuestion(q.id)} disabled={form.isPublished}>Delete</button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </section>
+          </section>
+        </div>
       )}
     </div>
   );

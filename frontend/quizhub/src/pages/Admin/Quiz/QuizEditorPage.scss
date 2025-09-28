@@ -19,7 +19,8 @@
     .actions { display:flex; gap:.5rem; justify-content:flex-end; }
   }
 }
-/* Error banner that doesn't break layout */
+
+/* Error banner */
 .error-banner {
   display: grid;
   grid-template-columns: auto 1fr auto;
@@ -31,8 +32,8 @@
   background: #fef2f2;
   color: #991b1b;
   border-radius: 12px;
-  white-space: normal;           /* ensure long messages wrap */
-  word-break: break-word;        /* avoid overflow on long tokens */
+  white-space: normal;
+  word-break: break-word;
 
   .error-icon { line-height: 1.2; }
   .error-text { display: block; }
@@ -42,9 +43,9 @@
   }
 }
 
-/* Optional: subtle loading text alignment */
 .loading { margin-bottom: .75rem; color: #6b7280; }
 
+/* Questions box */
 .qe-questions {
   margin-top: 1rem;
   background: #fff;
@@ -66,11 +67,9 @@
 
     .choices {
       display:grid; gap:.5rem;
-
       .choices-head { display:flex; justify-content:space-between; align-items:center;
         .choices-actions { display:flex; gap:.4rem; }
       }
-
       .choice-row { display:flex; gap:.6rem; align-items:center;
         input { flex: 1; border:1px solid #e5e7eb; border-radius:10px; padding:.5rem .6rem; }
         .inline { display:flex; align-items:center; gap:.4rem; }
@@ -101,5 +100,52 @@
   .qe-questions .q-item { position: relative; }
   .qe-questions .q-actions { display:flex; gap:.4rem; margin-top:.5rem; }
   .qe-questions [aria-disabled="true"] { opacity:.6; pointer-events:none; }
-  
+}
+
+.lock-wrap { position: relative; }
+
+/* Transparent, click-through overlay that still dims the UI */
+.lock-wrap.is-locked::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, .25); /* more transparent */
+  backdrop-filter: blur(0.1px);           /* very subtle blur */
+  z-index: 2;
+}
+
+/* Dim & block interactions by default */
+.lock-wrap.is-locked {
+  --lock-dim: .55;
+}
+.lock-wrap.is-locked :where(input, textarea, select, button, a, [role="button"], [contenteditable]) {
+  pointer-events: none;
+  user-select: none;
+  opacity: var(--lock-dim);
+}
+
+/* Explicit whitelist: elements marked with [data-allow] remain clickable above the overlay */
+.lock-wrap.is-locked [data-allow] {
+  pointer-events: auto !important;
+  user-select: auto !important;
+  opacity: 1 !important;
+  position: relative;
+  z-index: 3;
+}
+
+.lock-banner {
+  position: absolute;
+  z-index: 3;
+  top: .5rem;
+  right: .5rem;
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  padding: .35rem .55rem;
+  border-radius: 999px;
+  background: #111827;
+  color: #fff;
+  font-weight: 600;
+  font-size: .85rem;
+  box-shadow: 0 4px 10px rgba(0,0,0,.15);
 }

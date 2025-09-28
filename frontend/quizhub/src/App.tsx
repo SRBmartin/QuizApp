@@ -15,6 +15,7 @@ import TagsPage from "./pages/Admin/Tag/TagsPage";
 import RequireAdmin from "./routes/RequireAdmin";
 import AdminQuizzesPage from "./pages/Admin/Quiz/AdminQuizzesPage";
 import QuizEditorPage from "./pages/Admin/Quiz/QuizEditorPage";
+import QuizzesPage from "./pages/Quizzes/QuizzesPage";
 
 const Home: React.FC = () => (
   <div style={{ padding: "2rem" }}>
@@ -41,6 +42,8 @@ function App() {
 
               {/* Auth-only routes */}
               <Route element={<RequireAuth />}>
+                <Route path="/quizzes" element={<QuizzesPage />} />
+                
                 <Route element={<RequireAdmin />}>
                   <Route path="/admin/tags" element={<TagsPage />} />
                   <Route path="/admin/quizzes" element={<AdminQuizzesPage />} />

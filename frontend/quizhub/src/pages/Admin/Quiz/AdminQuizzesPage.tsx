@@ -13,6 +13,7 @@ const AdminQuizzesPage: React.FC = () => {
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const load = async (reset = false) => {
     setLoading(true); setErr(null);
@@ -28,7 +29,29 @@ const AdminQuizzesPage: React.FC = () => {
     } finally { setLoading(false); }
   };
 
-  useEffect(() => { load(true); }, []);
+  useEffect(() => { load(true); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, []);
+
+  const onDelete = async (id: string) => {
+    const q = items.find(x => x.id === id);
+    if (!q) return;
+    const ok = window.confirm(`Delete quiz "${q.name}"? This cannot be undone.`); // shows confirm dialog
+    if (!ok) return;
+
+    const snapshot = items;
+    setDeletingId(id);
+    // optimistic remove
+    setItems(prev => prev.filter(x => x.id !== id));
+
+    try {
+      await quizzesApi.delete(id); // HTTP DELETE under the hood
+    } catch (e: any) {
+      // rollback on failure
+      alert(e.message ?? "Failed to delete quiz.");
+      setItems(snapshot);
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   return (
     <div className="admin-quizzes">
@@ -46,12 +69,20 @@ const AdminQuizzesPage: React.FC = () => {
         </div>
 
         {items.map(q => (
-          <div className="row" key={q.id}>
+          <div className="row" key={q.id} data-busy={deletingId === q.id ? "1" : undefined}>
             <div className="col name"><Link to={`/quiz/${q.id}`}>{q.name}</Link></div>
             <div className="col lvl">{["Easy","Medium","Hard"][q.difficultyLevel] ?? q.difficultyLevel}</div>
             <div className="col pub">{q.isPublished ? "Yes" : "No"}</div>
             <div className="col actions">
               <Link className="btn ghost" to={`/admin/quizzes/${q.id}`}>Edit</Link>
+              <button
+                className="btn danger"
+                onClick={() => onDelete(q.id)}
+                disabled={deletingId === q.id}
+                aria-busy={deletingId === q.id}
+              >
+                {deletingId === q.id ? "Deleting…" : "Delete"}
+              </button>
             </div>
           </div>
         ))}

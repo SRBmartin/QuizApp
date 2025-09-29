@@ -12,6 +12,10 @@ public class AttemptConfiguration : IEntityTypeConfiguration<Attempt>
         builder.HasKey(x => x.Id);
 
         builder.Property(x => x.StartedAt).IsRequired();
+        builder.Property(x => x.Status).IsRequired();
+
+        builder.HasIndex(x => new { x.UserId, x.QuizId, x.Status });
+        builder.HasIndex(x => x.StartedAt);
 
         builder.HasOne(x => x.Quiz)
             .WithMany(x => x.Attempts)

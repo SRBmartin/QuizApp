@@ -13,4 +13,5 @@ public interface IQuizRepository
     Task<int> CountAsync(CancellationToken cancellationToken);
     Task<int> CountAsync(bool includeUnpublished, Guid? tagId, QuizLevel? difficulty, string? search, CancellationToken cancellationToken);
     Task<List<Quiz>> ListAsync(int skip, int take, bool includeUnpublished, Guid? tagId, QuizLevel? difficulty, string? search, CancellationToken cancellationToken);
+    IQueryable<Quiz> Query();
 }

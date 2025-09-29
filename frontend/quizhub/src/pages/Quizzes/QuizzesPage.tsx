@@ -203,6 +203,7 @@ const QuizzesPage: React.FC = () => {
                     Open in admin
                   </button>
                 )}
+                <Link className="btn ghost" to={`/quiz/${q.id}/leaderboard`}>Leaderboard</Link>
               </div>
             </article>
           );

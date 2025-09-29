@@ -6,6 +6,8 @@ using QuizApp.Api.Web.Auth;
 using QuizApp.Application.Features.Quizes.Create;
 using QuizApp.Application.Features.Quizes.Delete;
 using QuizApp.Application.Features.Quizes.GetById;
+using QuizApp.Application.Features.Quizes.GetGlobalLeaderBoard;
+using QuizApp.Application.Features.Quizes.GetLeaderboard;
 using QuizApp.Application.Features.Quizes.List;
 using QuizApp.Application.Features.Quizes.Update;
 using QuizApp.Application.Features.Quizes.UpdateTags;
@@ -88,6 +90,28 @@ public class QuizController (
         var command = new UpdateQuizTagsCommand(quizId, request.TagIds);
 
         var result = await mediator.Send(command, cancellationToken);
+
+        return this.ToActionResult(result);
+    }
+
+    [HttpGet("quizzes/{quizId:guid}/top")]
+    [RequireJwtToken]
+    public async Task<IActionResult> GetQuizLeaderboard([FromRoute] Guid quizId, [FromQuery] string? period = "all", [FromQuery] int take = 20, CancellationToken cancellationToken = default)
+    {
+        var query = new GetQuizLeaderboardQuery(quizId, period, take);
+
+        var result = await mediator.Send(query, cancellationToken);
+
+        return this.ToActionResult(result);
+    }
+
+    [HttpGet("top")]
+    [RequireJwtToken]
+    public async Task<IActionResult> GetGlobalLeaderboard([FromQuery] string? period = "all", [FromQuery] int take = 50, CancellationToken cancellationToken = default)
+    {
+        var query = new GetGlobalLeaderboardQuery(period, take);
+
+        var result = await mediator.Send(query, cancellationToken);
 
         return this.ToActionResult(result);
     }

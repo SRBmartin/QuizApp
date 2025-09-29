@@ -36,3 +36,35 @@ export type Quiz = {
   questions: Question[];
   tags: Tag[];
 };
+
+export type LeaderboardUser = {
+  id: string;
+  username: string;
+  photo?: string | null;
+};
+
+export type LeaderboardEntry = {
+  rank: number;
+  user: LeaderboardUser;
+  totalScore: number;
+  percentage: number;
+  submittedAt?: string | null;
+};
+
+export type LeaderboardResponse = {
+  quizId: string;
+  quizName: string;
+  period: "all" | "month" | "week" | string;
+  maxScore: number;
+  totalParticipants: number;
+  top: LeaderboardEntry[];
+  myEntry?: LeaderboardEntry | null;
+};
+
+export type GlobalLeaderboardResponse = {
+  period: "all" | "month" | "week" | string;
+  maxScoreTotal: number;
+  totalParticipants: number;
+  top: LeaderboardEntry[];
+  myEntry?: LeaderboardEntry | null;
+};

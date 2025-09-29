@@ -95,6 +95,11 @@ public class QuizRepository(
         return await query.CountAsync(cancellationToken);
     }
 
+    public IQueryable<Quiz> Query()
+    {
+        return dbContext.Quizzes.AsQueryable();
+    }
+
     #region Helpers
 
     private static IQueryable<Quiz> ApplyFilters(

@@ -17,6 +17,11 @@ import AdminQuizzesPage from "./pages/Admin/Quiz/AdminQuizzesPage";
 import QuizEditorPage from "./pages/Admin/Quiz/QuizEditorPage";
 import QuizzesPage from "./pages/Quizzes/QuizzesPage";
 import QuizPage from "./pages/Quizzes/QuizPage";
+import AnswerQuizPage from "./pages/Attempts/AnswerQuizPage";
+import ResultPage from "./pages/Attempts/ResultPage";
+import HomePage from "./pages/Home/HomePage";
+import LeaderboardPage from "./pages/Quizzes/Leaderboard/LeaderboardPage";
+import GlobalLeaderboardPage from "./pages/Quizzes/Leaderboard/GlobalLeaderboardPage";
 
 const Home: React.FC = () => (
   <div style={{ padding: "2rem" }}>
@@ -33,8 +38,6 @@ function App() {
           <Header />
           <main className="main-content">
             <Routes>
-              <Route path="/" element={<Home />} />
-
               {/* Guest-only routes */}
               <Route element={<RequireGuest redirectTo="/" />}>
                 <Route path="/login" element={<LoginPage />} />
@@ -43,8 +46,13 @@ function App() {
 
               {/* Auth-only routes */}
               <Route element={<RequireAuth />}>
+                <Route path="/" element={<HomePage />} />
                 <Route path="/quizzes" element={<QuizzesPage />} />
                 <Route path="/quiz/:id" element={<QuizPage />} />
+                <Route path="/quiz/:id/leaderboard" element={<LeaderboardPage />} />
+                <Route path="/quiz/:quizId/answer" element={<AnswerQuizPage />} />
+                <Route path="/attempt/:attemptId/result" element={<ResultPage />} />
+                <Route path="/leaderboard" element={<GlobalLeaderboardPage />} />
 
                 <Route element={<RequireAdmin />}>
                   <Route path="/admin/tags" element={<TagsPage />} />

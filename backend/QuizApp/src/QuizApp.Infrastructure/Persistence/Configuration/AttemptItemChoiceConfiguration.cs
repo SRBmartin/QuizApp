@@ -15,5 +15,11 @@ public class AttemptItemChoiceConfiguration : IEntityTypeConfiguration<AttemptIt
             .WithMany(x => x.AttemptItemChoices)
             .HasForeignKey(x => x.ChoiceId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(x => x.AttemptItem)
+            .WithMany(x => x.SelectedChoices)
+            .HasForeignKey(x => x.AttemptItemId)
+            .OnDelete(DeleteBehavior.Cascade);
+        
     }
 }

@@ -18,4 +18,17 @@ public class AttemptItem
 
     #endregion
 
+    public static AttemptItem For(Guid id, Guid attemptId, Guid questionId, DateTimeOffset answeredAtUtc, int awardedScore, bool isCorrect)
+    {
+        return new()
+        {
+            Id = id,
+            AttemptId = attemptId,
+            QuestionId = questionId,
+            AnsweredAt = answeredAtUtc,
+            AwardedScore = awardedScore,
+            IsCorrect = isCorrect
+        };
+    }
+
 }

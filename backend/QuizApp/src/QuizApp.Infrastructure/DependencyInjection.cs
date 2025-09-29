@@ -5,10 +5,13 @@ using QuizApp.Application.Abstractions.Identity;
 using QuizApp.Application.Abstractions.Storage;
 using QuizApp.Domain.Repositories;
 using QuizApp.Domain.Repositories.UoW;
+using QuizApp.Domain.Repositories.Writer;
+using QuizApp.Infrastructure.Background;
 using QuizApp.Infrastructure.Configuration;
 using QuizApp.Infrastructure.Persistence.Context;
 using QuizApp.Infrastructure.Persistence.Repositories;
 using QuizApp.Infrastructure.Persistence.Repositories.UoW;
+using QuizApp.Infrastructure.Persistence.Repositories.Writer;
 using QuizApp.Infrastructure.Services.Identity;
 using QuizApp.Infrastructure.Services.MinIo;
 
@@ -23,6 +26,8 @@ public static class DependencyInjection
         services.AddMinIo(configuration);
 
         services.AddJwtIdentity(configuration);
+
+        services.AddBackgroundServices();
 
         return services;
     }
@@ -52,8 +57,11 @@ public static class DependencyInjection
         services.AddScoped<IQuizTagRepository, QuizTagRepository>();
         services.AddScoped<IQuizRepository, QuizRepository>();
         services.AddScoped<IQuizQuestionRepository, QuizQuestionRepository>();
+        services.AddScoped<IAttemptRepository, AttemptRepository>();
         
         services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+        services.AddScoped<IAttemptAnswerWriter, AttemptAnswerWriter>();
 
         return services;
     }
@@ -82,6 +90,13 @@ public static class DependencyInjection
         services.AddSingleton<IIdentityService, JwtIdentityService>();
 
         services.AddSingleton<IPasswordService, BCryptPasswordService>();
+
+        return services;
+    }
+
+    private static IServiceCollection AddBackgroundServices(this IServiceCollection services)
+    {
+        services.AddHostedService<AttemptExpirationWorker>();
 
         return services;
     }

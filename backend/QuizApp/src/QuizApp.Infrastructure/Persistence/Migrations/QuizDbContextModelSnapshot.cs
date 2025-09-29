@@ -51,7 +51,9 @@ namespace QuizApp.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("QuizId");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("StartedAt");
+
+                    b.HasIndex("UserId", "QuizId", "Status");
 
                     b.ToTable("Attempts", "Quiz");
                 });
@@ -109,7 +111,8 @@ namespace QuizApp.Infrastructure.Persistence.Migrations
 
                     b.Property<string>("SubmittedText")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(1024)
+                        .HasColumnType("character varying(1024)");
 
                     b.HasKey("AttemptItemId");
 

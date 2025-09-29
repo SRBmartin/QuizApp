@@ -13,4 +13,17 @@ public static class EnumConversions
             _ => throw new InvalidDataException("Type of question provided was not found.")
         };
     }
+
+    public static DTOs.Questions.Emums.QuestionType ToDto(this Domain.Enums.QuestionType type)
+    {
+        return type switch
+        {
+            Domain.Enums.QuestionType.Single => DTOs.Questions.Emums.QuestionType.Single,
+            Domain.Enums.QuestionType.Multi => DTOs.Questions.Emums.QuestionType.Multi,
+            Domain.Enums.QuestionType.TrueFalse => DTOs.Questions.Emums.QuestionType.TrueFalse,
+            Domain.Enums.QuestionType.FillIn => DTOs.Questions.Emums.QuestionType.FillIn,
+            _ => throw new InvalidDataException("Type of question provided was not found.")
+        };
+    }
+
 }

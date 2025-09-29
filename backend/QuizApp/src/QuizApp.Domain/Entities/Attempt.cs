@@ -20,4 +20,24 @@ public class Attempt
 
     #endregion
 
+    public static Attempt Start(Guid id, Guid quizId, Guid userId, DateTimeOffset startedAtUtc)
+    {
+        return new()
+        {
+            Id = id,
+            QuizId = quizId,
+            UserId = userId,
+            StartedAt = startedAtUtc,
+            Status = AttemptStatus.InProgress,
+            TotalScore = 0
+        };
+    }
+
+    public void Complete(DateTimeOffset submittedAtUtc, int totalScore)
+    {
+        SubmittedAt = submittedAtUtc;
+        Status = AttemptStatus.Completed;
+        TotalScore = totalScore;
+    }
+
 }

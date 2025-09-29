@@ -2,7 +2,6 @@ import React from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import "./Header.scss";
 import { useAuth } from "../../../context/AuthContext";
-import { auth } from "../../../services/auth.api";
 
 const Header: React.FC = () => {
   const { isAuthenticated, isAdmin, logout } = useAuth();
@@ -34,11 +33,6 @@ const Header: React.FC = () => {
           <NavLink to="/leaderboard" className={({ isActive }) => (isActive ? "active" : "")}>
             Leaderboard
           </NavLink>
-          {isAuthenticated && (
-            <NavLink to="/dashboard" className={({ isActive }) => (isActive ? "active" : "")}>
-              Dashboard
-            </NavLink>
-          )}
           
           {isAdmin && (
               <NavLink to="/admin/tags" className={({ isActive }) => (isActive ? "active" : "")}>

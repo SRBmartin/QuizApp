@@ -17,6 +17,8 @@ import AdminQuizzesPage from "./pages/Admin/Quiz/AdminQuizzesPage";
 import QuizEditorPage from "./pages/Admin/Quiz/QuizEditorPage";
 import QuizzesPage from "./pages/Quizzes/QuizzesPage";
 import QuizPage from "./pages/Quizzes/QuizPage";
+import AnswerQuizPage from "./pages/Attempts/AnswerQuizPage";
+import ResultPage from "./pages/Attempts/ResultPage";
 
 const Home: React.FC = () => (
   <div style={{ padding: "2rem" }}>
@@ -45,6 +47,8 @@ function App() {
               <Route element={<RequireAuth />}>
                 <Route path="/quizzes" element={<QuizzesPage />} />
                 <Route path="/quiz/:id" element={<QuizPage />} />
+                <Route path="/quiz/:quizId/answer" element={<AnswerQuizPage />} />
+                <Route path="/attempt/:attemptId/result" element={<ResultPage />} />
 
                 <Route element={<RequireAdmin />}>
                   <Route path="/admin/tags" element={<TagsPage />} />

@@ -1,4 +1,5 @@
-﻿using QuizApp.Application.DTOs.Questions.Emums;
+﻿using QuizApp.Application.Common.Mappings;
+using QuizApp.Application.DTOs.Questions.Emums;
 
 namespace QuizApp.Application.DTOs.Attempts;
 

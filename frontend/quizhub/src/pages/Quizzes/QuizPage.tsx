@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
 import "./QuizPage.scss";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { quizzesApi } from "../../services/quizzes.api";
 import type { Quiz } from "../../models/quiz";
 import { useAuth } from "../../context/AuthContext";
 import { QuestionType } from "../../models/question";
+import { attemptsApi } from "../../services/attempts.api";
 
 const QuizPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -12,6 +13,7 @@ const QuizPage: React.FC = () => {
   const [quiz, setQuiz] = useState<Quiz | null>(null);
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!id) return;
@@ -28,6 +30,11 @@ const QuizPage: React.FC = () => {
       }
     })();
   }, [id]);
+
+  const onStart = async () => {
+    if (!quiz) return;
+    navigate(`/quiz/${quiz.id}/answer`, { replace: true });
+  };
 
   if (loading) return <div className="quiz-page"><div className="loading">Loading…</div></div>;
   if (err) return <div className="quiz-page"><div className="error">{err}</div></div>;
@@ -58,7 +65,7 @@ const QuizPage: React.FC = () => {
 
       {!isAdmin && (
         <div className="cta">
-          <button type="button" className="btn primary start-btn">
+          <button type="button" className="btn primary start-btn" onClick={onStart}>
             Start the quiz
           </button>
         </div>

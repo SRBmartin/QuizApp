@@ -5,11 +5,13 @@ using QuizApp.Application.Abstractions.Identity;
 using QuizApp.Application.Abstractions.Storage;
 using QuizApp.Domain.Repositories;
 using QuizApp.Domain.Repositories.UoW;
+using QuizApp.Domain.Repositories.Writer;
 using QuizApp.Infrastructure.Background;
 using QuizApp.Infrastructure.Configuration;
 using QuizApp.Infrastructure.Persistence.Context;
 using QuizApp.Infrastructure.Persistence.Repositories;
 using QuizApp.Infrastructure.Persistence.Repositories.UoW;
+using QuizApp.Infrastructure.Persistence.Repositories.Writer;
 using QuizApp.Infrastructure.Services.Identity;
 using QuizApp.Infrastructure.Services.MinIo;
 
@@ -58,6 +60,8 @@ public static class DependencyInjection
         services.AddScoped<IAttemptRepository, AttemptRepository>();
         
         services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+        services.AddScoped<IAttemptAnswerWriter, AttemptAnswerWriter>();
 
         return services;
     }

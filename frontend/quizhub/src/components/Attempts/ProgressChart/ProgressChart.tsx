@@ -20,10 +20,8 @@ const ProgressChart: React.FC<Props> = ({ quizId, currentAttemptId }) => {
   const rootRef = useRef<HTMLDivElement | null>(null);
   const [width, setWidth] = useState(380);
 
-  // keep only newest response
   const seqRef = useRef(0);
 
-  // observe container width
   useEffect(() => {
     if (!rootRef.current) return;
     const el = rootRef.current;
@@ -36,7 +34,6 @@ const ProgressChart: React.FC<Props> = ({ quizId, currentAttemptId }) => {
     return () => ro.disconnect();
   }, []);
 
-  // fetch attempts (no caching that blocks later mounts)
   useEffect(() => {
     if (!quizId) return;
     const mySeq = ++seqRef.current;
@@ -106,14 +103,12 @@ const ProgressChart: React.FC<Props> = ({ quizId, currentAttemptId }) => {
         {hasEnough && <span className="pill">{pts.length} completed</span>}
       </div>
 
-      {/* states */}
       {loading && !pts.length && <div className="muted">Loading…</div>}
       {err && !pts.length && <div className="error">{err}</div>}
       {!loading && !err && !hasEnough && (
         <div className="muted">Complete more attempts to see your progress.</div>
       )}
 
-      {/* chart */}
       {hasEnough && (
         <div className="pg-chart">
           <svg width="100%" height={HEIGHT} viewBox={`0 0 ${Math.max(240, width)} ${HEIGHT}`} role="img" aria-label="Progress line chart">

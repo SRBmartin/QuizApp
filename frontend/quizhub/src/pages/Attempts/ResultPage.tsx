@@ -16,7 +16,6 @@ const ResultPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
-  // Guard against stale async responses (e.g., StrictMode double-invoke in dev)
   const reqSeqRef = useRef(0);
 
   const pct = useMemo(() => {
@@ -49,7 +48,6 @@ const ResultPage: React.FC = () => {
       setLoading(true);
       setErr(null);
       try {
-        // 1) Summary
         let sum: AttemptResultSummary | null = null;
         try {
           sum = await attemptsApi.resultSummary(attemptId);
@@ -60,7 +58,6 @@ const ResultPage: React.FC = () => {
 
         if (cancelled || mySeq !== reqSeqRef.current) return;
 
-        // If this attempt is still in progress, route back to answering
         if (sum && (sum.status === "InProgress" || (typeof sum.status === "number" && sum.status !== 1))) {
           navigate(`/quiz/${sum.quizId}/answer`, { replace: true });
           return;
@@ -68,7 +65,6 @@ const ResultPage: React.FC = () => {
 
         setSummary(sum);
 
-        // 2) Detailed review (best-effort)
         try {
           const rev = await attemptsApi.resultReview(attemptId);
           if (!cancelled && mySeq === reqSeqRef.current) setReview(rev);
@@ -111,7 +107,7 @@ const ResultPage: React.FC = () => {
 
       {!loading && summary && (
         <section className="res-grid">
-          {/* LEFT: score card */}
+          
           <article className="card score">
             <div className="score-top">
               <div className="big">{pct}<span className="unit">%</span></div>
@@ -168,7 +164,6 @@ const ResultPage: React.FC = () => {
 
 export default ResultPage;
 
-// ---------- helpers ----------
 
 function mapStateToSummary(st: AttemptState): AttemptResultSummary {
   const percentage = st.totalQuestions > 0
@@ -181,9 +176,9 @@ function mapStateToSummary(st: AttemptState): AttemptResultSummary {
     quizName: "",
     status: st.status,
     totalQuestions: st.totalQuestions,
-    correctAnswers: st.totalScore, // adjust if scoring differs
+    correctAnswers: st.totalScore,
     totalScore: st.totalScore,
-    maxScore: st.totalQuestions,   // adjust if points vary
+    maxScore: st.totalQuestions,
     percentage,
     startedAt: st.startedAt,
     submittedAt: st.submittedAt ?? undefined,

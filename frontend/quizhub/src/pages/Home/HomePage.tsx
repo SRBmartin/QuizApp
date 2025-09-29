@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import "./HomePage.scss";
 import { Link, useNavigate } from "react-router-dom";
 import { attemptsApi } from "../../services/attempts.api";
@@ -9,7 +9,7 @@ import { Paged } from "../../models/pages";
 const PAGE_SIZE = 12;
 
 const HomePage: React.FC = () => {
-  const { user } = useAuth(); // assuming you expose current user; not required but handy
+  const { user } = useAuth();
   const navigate = useNavigate();
 
   const [items, setItems] = useState<MyAttempt[]>([]);
@@ -19,33 +19,41 @@ const HomePage: React.FC = () => {
   const [err, setErr] = useState<string | null>(null);
   const [status, setStatus] = useState<"all" | "Completed" | "InProgress">("all");
 
+  const requestSeqRef = useRef(0);
+
   const hasMore = useMemo(() => items.length < total, [items.length, total]);
 
-  const load = useCallback(async (reset = false) => {
-    setLoading(true);
-    setErr(null);
-    try {
-      const s = reset ? 0 : skip;
-      const resp: Paged<MyAttempt> = await attemptsApi.myAttempts(s, PAGE_SIZE, {
-        status: status === "all" ? undefined : status
-      });
-      setTotal(resp.total);
-      setSkip(s + resp.items.length);
-      setItems(prev => reset ? resp.items : [...prev, ...resp.items]);
-    } catch (e: any) {
-      setErr(e?.message ?? "Failed to load attempts.");
-    } finally {
-      setLoading(false);
-    }
-  }, [skip, status]);
+  const loadPage = useCallback(
+    async (offset: number, replace: boolean) => {
+      const seq = ++requestSeqRef.current;
+      setLoading(true);
+      setErr(null);
+      try {
+        const resp: Paged<MyAttempt> = await attemptsApi.myAttempts(offset, PAGE_SIZE, {
+          status: status === "all" ? undefined : status,
+        });
+
+        if (seq !== requestSeqRef.current) return;
+
+        setTotal(resp.total);
+        setSkip(offset + resp.items.length);
+        setItems(prev => (replace ? resp.items : [...prev, ...resp.items]));
+      } catch (e: any) {
+        if (seq !== requestSeqRef.current) return;
+        setErr(e?.message ?? "Failed to load attempts.");
+      } finally {
+        if (seq === requestSeqRef.current) setLoading(false);
+      }
+    },
+    [status]
+  );
 
   useEffect(() => {
-    // initial and whenever filter changes: reset list
-    (async () => {
-      setSkip(0);
-      await load(true);
-    })();
-  }, [status, load]);
+    setItems([]);
+    setTotal(0);
+    setSkip(0);
+    loadPage(0, true);
+  }, [status, loadPage]);
 
   const onView = (a: MyAttempt) => {
     if (a.status === "InProgress") {
@@ -53,6 +61,10 @@ const HomePage: React.FC = () => {
     } else {
       navigate(`/attempt/${a.attemptId}/result`);
     }
+  };
+
+  const setFilter = (value: "all" | "Completed" | "InProgress") => {
+    if (status !== value) setStatus(value);
   };
 
   return (
@@ -68,15 +80,18 @@ const HomePage: React.FC = () => {
         <div className="seg">
           <button
             className={`seg-btn ${status === "all" ? "active" : ""}`}
-            onClick={() => setStatus("all")}
+            onClick={() => setFilter("all")}
+            disabled={loading}
           >All</button>
           <button
             className={`seg-btn ${status === "Completed" ? "active" : ""}`}
-            onClick={() => setStatus("Completed")}
+            onClick={() => setFilter("Completed")}
+            disabled={loading}
           >Completed</button>
           <button
             className={`seg-btn ${status === "InProgress" ? "active" : ""}`}
-            onClick={() => setStatus("InProgress")}
+            onClick={() => setFilter("InProgress")}
+            disabled={loading}
           >In progress</button>
         </div>
       </section>
@@ -99,7 +114,7 @@ const HomePage: React.FC = () => {
 
       {hasMore && (
         <div className="more">
-          <button className="btn" onClick={() => load(false)} disabled={loading}>
+          <button className="btn" onClick={() => loadPage(skip, false)} disabled={loading}>
             {loading ? "Loading…" : "Load more"}
           </button>
         </div>
@@ -109,8 +124,6 @@ const HomePage: React.FC = () => {
 };
 
 export default HomePage;
-
-// ---------- Card ----------
 
 const AttemptCard: React.FC<{ a: MyAttempt; onView: () => void }> = ({ a, onView }) => {
   const pct = Math.max(0, Math.min(100, Math.round(a.percentage ?? 0)));

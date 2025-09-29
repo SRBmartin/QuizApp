@@ -1,5 +1,6 @@
 import { http } from "./http";
 import type { AttemptQuestion, AttemptState, SaveAnswerRequest, StartAttemptResponse } from "../models/attempt";
+import type { AttemptResultSummary, AttemptResultReview, AttemptResultCombined } from "../models/attempt-result";
 
 export type NextResponse = AttemptQuestion | StartAttemptResponse;
 
@@ -21,5 +22,18 @@ export const attemptsApi = {
   },
   submit(attemptId: string): Promise<AttemptState> {
     return http<AttemptState>(`/api/Attempt/attempts/${attemptId}/submit`, { method: "POST" });
-  }
+  },
+
+  // ---------- Results ----------
+  resultSummary(attemptId: string): Promise<AttemptResultSummary> {
+    return http<AttemptResultSummary>(`/api/Attempt/attempts/${attemptId}/result/summary`, { method: "GET" });
+  },
+  resultReview(attemptId: string): Promise<AttemptResultReview> {
+    return http<AttemptResultReview>(`/api/Attempt/attempts/${attemptId}/result/review`, { method: "GET" });
+  },
+
+  // ✅ Provide a real implementation (or remove usage in the UI)
+  resultCombined(attemptId: string): Promise<AttemptResultCombined> {
+    return http<AttemptResultCombined>(`/api/Attempt/attempts/${attemptId}/result`, { method: "GET" });
+  },
 };

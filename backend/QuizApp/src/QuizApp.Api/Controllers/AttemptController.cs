@@ -3,6 +3,9 @@ using Microsoft.AspNetCore.Mvc;
 using QuizApp.Api.Contracts.Attempts;
 using QuizApp.Api.Extensions;
 using QuizApp.Api.Web.Auth;
+using QuizApp.Application.Features.Attempts.GetAttemptResultCombined;
+using QuizApp.Application.Features.Attempts.GetAttemptResultReview;
+using QuizApp.Application.Features.Attempts.GetAttemptResultSummary;
 using QuizApp.Application.Features.Attempts.GetAttemptState;
 using QuizApp.Application.Features.Attempts.SaveAnswer;
 using QuizApp.Application.Features.Attempts.Start;
@@ -73,6 +76,39 @@ public class AttemptController (
     public async Task<IActionResult> Submit([FromRoute] Guid attemptId, CancellationToken cancellationToken)
     {
         var command = new SubmitAttemptCommand(attemptId);
+
+        var result = await mediator.Send(command, cancellationToken);
+
+        return this.ToActionResult(result);
+    }
+
+    [HttpGet("attempts/{attemptId:guid}/result/summary")]
+    [RequireJwtToken]
+    public async Task<IActionResult> GetResultSummary([FromRoute] Guid attemptId, CancellationToken cancellationToken)
+    {
+        var command = new GetAttemptResultSummaryQuery(attemptId);
+
+        var result = await mediator.Send(command, cancellationToken);
+
+        return this.ToActionResult(result);
+    }
+
+    [HttpGet("attempts/{attemptId:guid}/result/review")]
+    [RequireJwtToken]
+    public async Task<IActionResult> GetResultReview([FromRoute] Guid attemptId, CancellationToken cancellationToken)
+    {
+        var command = new GetAttemptResultReviewQuery(attemptId);
+
+        var result = await mediator.Send(command, cancellationToken);
+
+        return this.ToActionResult(result);
+    }
+
+    [HttpGet("attempts/{attemptId:guid}/result")]
+    [RequireJwtToken]
+    public async Task<IActionResult> GetResultCombined([FromRoute] Guid attemptId, CancellationToken cancellationToken)
+    {
+        var command = new GetAttemptResultCombinedQuery(attemptId);
 
         var result = await mediator.Send(command, cancellationToken);
 

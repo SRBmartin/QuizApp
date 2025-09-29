@@ -20,7 +20,6 @@ const AnswerQuizPage: React.FC = () => {
   const [timeLeft, setTimeLeft] = useState<number>(0);
   const [limit, setLimit] = useState<number>(0);
 
-  // ✅ store selection/text in state so UI re-renders and button enables
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [textAnswer, setTextAnswer] = useState<string>("");
 
@@ -78,12 +77,11 @@ const AnswerQuizPage: React.FC = () => {
     setLoading(true);
     setErr(null);
     try {
-      // Start once; backend resumes or creates one active attempt
       const resp = await attemptsApi.start(quizId);
       setAttemptId(resp.attemptId);
       localStorage.setItem(STORAGE_KEY, JSON.stringify({ attemptId: resp.attemptId }));
       setQuestion(resp.question);
-      // reset selections for first question
+
       setSelectedIds(new Set());
       setTextAnswer("");
       startTicking(resp.attemptId, resp.timeLeftSeconds, resp.timeLimitSeconds);
@@ -117,8 +115,6 @@ const AnswerQuizPage: React.FC = () => {
     };
   }, [attemptId, clearTimers, init, navigate]);
 
-  // ===== Selection handlers (STATE, not ref) =====
-
   const onOptionToggle = (id: string) => {
     if (!question) return;
     setSelectedIds(prev => {
@@ -127,7 +123,6 @@ const AnswerQuizPage: React.FC = () => {
         ns.has(id) ? ns.delete(id) : ns.add(id);
         return ns;
       }
-      // Single / TrueFalse
       return new Set([id]);
     });
   };
@@ -142,16 +137,18 @@ const AnswerQuizPage: React.FC = () => {
     if (question.type === QuestionType.Multi) {
       return selectedIds.size > 0;
     }
-    return selectedIds.size === 1; // Single, TrueFalse
+    return selectedIds.size === 1;
   }, [question, textAnswer, selectedIds]);
 
-  // ==============================================
 
-  const onSaveAnswer = async () => {
-    if (!attemptId || !question || !canSubmitAnswer) return;
+    const onSaveAnswer = async () => {
+    if (!attemptId || !question || !canSubmitAnswer || saving) return;
 
     setSaving(true);
     setErr(null);
+
+    const wasLast = !!question.isLast;
+
     try {
       const payload: any = {};
       if (question.type === QuestionType.FillIn) {
@@ -161,13 +158,34 @@ const AnswerQuizPage: React.FC = () => {
       }
 
       const next = await attemptsApi.saveAnswer(attemptId, question.id, payload);
-      // move to next question, reset UI selection
+
+      if (wasLast) {
+        try {
+          await attemptsApi.submit(attemptId);
+        } finally {
+          clearTimers();
+          navigate(`/attempt/${attemptId}/result`, { replace: true });
+        }
+        return;
+      }
+
+      if (next && next.isLast && next.id === question.id) {
+        try {
+          await attemptsApi.submit(attemptId);
+        } finally {
+          clearTimers();
+          navigate(`/attempt/${attemptId}/result`, { replace: true });
+        }
+        return;
+      }
+
       setQuestion(next);
       setSelectedIds(new Set());
       setTextAnswer("");
     } catch (e: any) {
       const msg = e?.message as string;
       if (msg?.toLowerCase().includes("time")) {
+        clearTimers();
         navigate(`/attempt/${attemptId}/result`, { replace: true });
       } else {
         setErr(msg ?? "Failed to save answer.");
@@ -269,7 +287,7 @@ const AnswerQuizPage: React.FC = () => {
 
           <div className="actions">
             <button type="button" className="btn primary" onClick={onSaveAnswer} disabled={!canSubmitAnswer || saving}>
-              {question.isLast ? "Save answer" : "Save & next"}
+              {question.isLast ? "Save and finish" : "Save & next"}
             </button>
           </div>
         </section>

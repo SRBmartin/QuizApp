@@ -10,5 +10,6 @@ public record GetMyAttemptsQuery
 (
     int Skip,
     int Take,
-    AttemptStatus? StatusFilter = null
+    AttemptStatus? StatusFilter = null,
+    Guid? QuizId = null
 ) : IRequest<Result<PagedListDto<MyAttemptListItemDto>>>;

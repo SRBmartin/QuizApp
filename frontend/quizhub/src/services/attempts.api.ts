@@ -36,13 +36,18 @@ export const attemptsApi = {
     return http<AttemptResultCombined>(`/api/Attempt/attempts/${attemptId}/result`, { method: "GET" });
   },
 
-  myAttempts(skip: number, take: number, opts?: { status?: "InProgress" | "Completed" | number }): Promise<Paged<MyAttempt>> {
+  myAttempts(
+    skip: number,
+    take: number,
+    opts?: { status?: "InProgress" | "Completed" | number; quizId?: string }
+  ): Promise<Paged<MyAttempt>> {
     const sp = new URLSearchParams();
     sp.set("skip", String(skip));
     sp.set("take", String(take));
     if (opts?.status !== undefined && opts?.status !== null) sp.set("status", String(opts.status));
+    if (opts?.quizId) sp.set("quizId", opts.quizId);
     const q = sp.toString() ? `?${sp.toString()}` : "";
     return http<Paged<MyAttempt>>(`/api/Attempt/my${q}`, { method: "GET" });
   },
-  
+
 };

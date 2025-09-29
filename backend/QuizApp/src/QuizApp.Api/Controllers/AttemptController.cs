@@ -119,7 +119,7 @@ public class AttemptController (
 
     [HttpGet("my")]
     [RequireJwtToken]
-    public async Task<IActionResult> GetMyAttempts([FromQuery] int skip = 0, [FromQuery] int take = 20, [FromQuery] string? status = null, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> GetMyAttempts([FromQuery] int skip = 0, [FromQuery] int take = 20, [FromQuery] string? status = null, [FromQuery] Guid? quizId = null, CancellationToken cancellationToken = default)
     {
         AttemptStatus? parsed = null;
         if (!string.IsNullOrWhiteSpace(status))
@@ -130,7 +130,7 @@ public class AttemptController (
                 parsed = (AttemptStatus)si;
         }
 
-        var query = new GetMyAttemptsQuery(skip, take, parsed);
+        var query = new GetMyAttemptsQuery(skip, take, parsed, quizId);
 
         var result = await mediator.Send(query, cancellationToken);
 

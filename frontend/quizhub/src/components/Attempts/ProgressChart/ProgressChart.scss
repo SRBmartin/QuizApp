@@ -1,0 +1,80 @@
+.progress-embed {
+  margin-top: .75rem;
+  padding-top: .5rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.pg-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .5rem;
+  margin-bottom: .5rem;
+}
+.pg-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.pill {
+  background: #f3f4f6;
+  border-radius: 999px;
+  padding: .15rem .5rem;
+  font-size: .8rem;
+  font-weight: 700;
+  color: #374151;
+}
+
+.pg-chart {
+  width: 100%;
+  overflow: hidden;
+}
+.grid {
+  stroke: #e5e7eb;
+  stroke-width: 1;
+}
+.tick {
+  fill: #6b7280;
+  font-size: .75rem;
+}
+
+.line {
+  fill: none;
+  stroke: #16a34a;
+  stroke-width: 2.5;
+}
+
+.pt {
+  fill: #10b981;
+  stroke: #065f46;
+  stroke-width: 1;
+}
+.pt.current {
+  fill: #1d4ed8;
+  stroke: #1e40af;
+}
+
+.pg-legend {
+  margin-top: .35rem;
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  color: #6b7280;
+  font-weight: 600;
+  font-size: .9rem;
+}
+.pg-legend .dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  margin-right: .35rem;
+  transform: translateY(1px);
+}
+.pg-legend .dot.current { background: #1d4ed8; }
+.pg-legend .dot.other   { background: #10b981; }
+
+.error { color: #b91c1c; font-weight: 700; }
+.muted { color: #6b7280; }

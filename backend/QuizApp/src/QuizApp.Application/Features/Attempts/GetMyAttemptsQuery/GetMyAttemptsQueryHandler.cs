@@ -26,6 +26,9 @@ public class GetMyAttemptsQueryHandler(
         if (query.StatusFilter.HasValue)
             baseQ = baseQ.Where(a => a.Status == query.StatusFilter.Value);
 
+        if (query.QuizId.HasValue)
+            baseQ = baseQ.Where(a => a.QuizId == query.QuizId.Value);
+
         var total = baseQ.Count();
 
         var q = baseQ
@@ -56,7 +59,6 @@ public class GetMyAttemptsQueryHandler(
         var items = q.ToList();
 
         var result = new PagedListDto<MyAttemptListItemDto>(items, total, query.Skip, query.Take);
-
         return Result<PagedListDto<MyAttemptListItemDto>>.Success(result);
     }
 }

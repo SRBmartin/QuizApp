@@ -1,10 +1,11 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import "./ResultPage.scss";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { attemptsApi } from "../../services/attempts.api";
 import type { AttemptResultSummary, AttemptResultReview, AttemptReviewItem } from "../../models/attempt-result";
 import { QuestionType } from "../../models/question";
 import type { AttemptState } from "../../models/attempt";
+import ProgressChart from "../../components/Attempts/ProgressChart/ProgressChart";
 
 const ResultPage: React.FC = () => {
   const { attemptId } = useParams<{ attemptId: string }>();
@@ -14,6 +15,9 @@ const ResultPage: React.FC = () => {
   const [review, setReview] = useState<AttemptResultReview | null>(null);
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+
+  // Guard against stale async responses (e.g., StrictMode double-invoke in dev)
+  const reqSeqRef = useRef(0);
 
   const pct = useMemo(() => {
     if (!summary) return 0;
@@ -38,13 +42,14 @@ const ResultPage: React.FC = () => {
 
   useEffect(() => {
     if (!attemptId) return;
+    const mySeq = ++reqSeqRef.current;
     let cancelled = false;
 
     (async () => {
       setLoading(true);
       setErr(null);
       try {
-        // 1) Try explicit summary endpoint
+        // 1) Summary
         let sum: AttemptResultSummary | null = null;
         try {
           sum = await attemptsApi.resultSummary(attemptId);
@@ -53,33 +58,33 @@ const ResultPage: React.FC = () => {
           sum = mapStateToSummary(st);
         }
 
+        if (cancelled || mySeq !== reqSeqRef.current) return;
+
+        // If this attempt is still in progress, route back to answering
         if (sum && (sum.status === "InProgress" || (typeof sum.status === "number" && sum.status !== 1))) {
           navigate(`/quiz/${sum.quizId}/answer`, { replace: true });
           return;
         }
 
-        if (!cancelled) setSummary(sum);
+        setSummary(sum);
 
-        let rev: AttemptResultReview | null = null;
+        // 2) Detailed review (best-effort)
         try {
-          rev = await attemptsApi.resultReview(attemptId);
+          const rev = await attemptsApi.resultReview(attemptId);
+          if (!cancelled && mySeq === reqSeqRef.current) setReview(rev);
         } catch {
           try {
             const combined = await attemptsApi.resultCombined?.(attemptId);
-            if (combined) {
-              rev = { attemptId, items: combined.items ?? [] };
-              if (combined.summary && !cancelled) setSummary(combined.summary);
+            if (combined && !cancelled && mySeq === reqSeqRef.current) {
+              setReview({ attemptId, items: combined.items ?? [] });
+              if (combined.summary) setSummary(combined.summary);
             }
-          } catch {
-            /*ignore – show summary only*/
-          }
+          } catch { /* ignore */ }
         }
-
-        if (!cancelled) setReview(rev);
       } catch (e: any) {
-        if (!cancelled) setErr(e?.message ?? "Failed to load results.");
+        if (!cancelled && mySeq === reqSeqRef.current) setErr(e?.message ?? "Failed to load results.");
       } finally {
-        if (!cancelled) setLoading(false);
+        if (!cancelled && mySeq === reqSeqRef.current) setLoading(false);
       }
     })();
 
@@ -106,7 +111,7 @@ const ResultPage: React.FC = () => {
 
       {!loading && summary && (
         <section className="res-grid">
-
+          {/* LEFT: score card */}
           <article className="card score">
             <div className="score-top">
               <div className="big">{pct}<span className="unit">%</span></div>
@@ -134,6 +139,7 @@ const ResultPage: React.FC = () => {
                 </div>
               )}
             </div>
+            <ProgressChart quizId={summary.quizId} currentAttemptId={summary.attemptId} />
           </article>
 
           <article className="card review">
@@ -162,6 +168,8 @@ const ResultPage: React.FC = () => {
 
 export default ResultPage;
 
+// ---------- helpers ----------
+
 function mapStateToSummary(st: AttemptState): AttemptResultSummary {
   const percentage = st.totalQuestions > 0
     ? Math.round((st.totalScore / Math.max(st.totalQuestions, 1)) * 100)
@@ -173,9 +181,9 @@ function mapStateToSummary(st: AttemptState): AttemptResultSummary {
     quizName: "",
     status: st.status,
     totalQuestions: st.totalQuestions,
-    correctAnswers: st.totalScore,
+    correctAnswers: st.totalScore, // adjust if scoring differs
     totalScore: st.totalScore,
-    maxScore: st.totalQuestions,
+    maxScore: st.totalQuestions,   // adjust if points vary
     percentage,
     startedAt: st.startedAt,
     submittedAt: st.submittedAt ?? undefined,

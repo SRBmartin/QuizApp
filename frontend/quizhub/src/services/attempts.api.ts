@@ -1,7 +1,7 @@
 import { http } from "./http";
 import type { AttemptQuestion, AttemptState, SaveAnswerRequest, StartAttemptResponse } from "../models/attempt";
 import type { AttemptResultSummary, AttemptResultReview, AttemptResultCombined } from "../models/attempt-result";
-import type { MyAttempt } from "../models/my-attempt";
+import type { MyAttempt, QuizAttemptRow } from "../models/my-attempt";
 import { Paged } from "../models/pages";
 
 export type NextResponse = AttemptQuestion | StartAttemptResponse;
@@ -48,6 +48,21 @@ export const attemptsApi = {
     if (opts?.quizId) sp.set("quizId", opts.quizId);
     const q = sp.toString() ? `?${sp.toString()}` : "";
     return http<Paged<MyAttempt>>(`/api/Attempt/my${q}`, { method: "GET" });
+  },
+
+  quizAttempts(
+  quizId: string,
+  skip: number,
+  take: number,
+  opts?: { status?: "InProgress" | "Completed" | number; userId?: string }
+  ): Promise<Paged<QuizAttemptRow>> {
+    const sp = new URLSearchParams();
+    sp.set("skip", String(skip));
+    sp.set("take", String(take));
+    if (opts?.status !== undefined && opts?.status !== null) sp.set("status", String(opts.status));
+    if (opts?.userId) sp.set("userId", opts.userId);
+    const q = sp.toString() ? `?${sp.toString()}` : "";
+    return http<Paged<QuizAttemptRow>>(`/api/Attempt/quizzes/${quizId}/attempts${q}`, { method: "GET" });
   },
 
 };

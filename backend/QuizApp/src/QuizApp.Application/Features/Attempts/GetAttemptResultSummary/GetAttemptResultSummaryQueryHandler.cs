@@ -19,8 +19,15 @@ public class GetAttemptResultSummaryQueryHandler(
             return Result<AttemptResultSummaryDto>.Failure(new Error("auth.unauthorized", "Unauthorized."));
 
         var attempt = await attemptRepository.FindByIdAsync(query.AttemptId, cancellationToken);
-        if (attempt is null || attempt.UserId != currentUser.Id.Value)
+
+        var isOwner = attempt.UserId == currentUser.Id.Value;
+        var isAdmin = currentUser.Role!.Equals("Admin");
+
+        if (attempt is null || (!isOwner && !isAdmin))
             return Result<AttemptResultSummaryDto>.Failure(new Error("attempt.not_found", "Attempt not found."));
+
+        if (!isOwner && !isAdmin)
+            return Result<AttemptResultSummaryDto>.Failure(new Error("auth.forbidden", "Forbidden."));
 
         var quiz = await quizRepository.FindByIdAsync(attempt.QuizId, cancellationToken);
         if (quiz is null)

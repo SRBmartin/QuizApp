@@ -8,6 +8,7 @@ using QuizApp.Application.Features.Attempts.GetAttemptResultReview;
 using QuizApp.Application.Features.Attempts.GetAttemptResultSummary;
 using QuizApp.Application.Features.Attempts.GetAttemptState;
 using QuizApp.Application.Features.Attempts.GetMyAttemptsQuery;
+using QuizApp.Application.Features.Attempts.GetQuizAttempts;
 using QuizApp.Application.Features.Attempts.SaveAnswer;
 using QuizApp.Application.Features.Attempts.Start;
 using QuizApp.Application.Features.Attempts.Submit;
@@ -134,6 +135,30 @@ public class AttemptController (
 
         var result = await mediator.Send(query, cancellationToken);
 
+        return this.ToActionResult(result);
+    }
+
+    [HttpGet("quizzes/{quizId:guid}/attempts")]
+    [RequireJwtToken]
+    public async Task<IActionResult> GetQuizAttempts(
+    [FromRoute] Guid quizId,
+    [FromQuery] int skip = 0,
+    [FromQuery] int take = 20,
+    [FromQuery] string? status = null,
+    [FromQuery] Guid? userId = null,
+    CancellationToken cancellationToken = default)
+    {
+        AttemptStatus? parsed = null;
+        if (!string.IsNullOrWhiteSpace(status))
+        {
+            if (Enum.TryParse<AttemptStatus>(status, ignoreCase: true, out var s))
+                parsed = s;
+            else if (int.TryParse(status, out var si) && Enum.IsDefined(typeof(AttemptStatus), si))
+                parsed = (AttemptStatus)si;
+        }
+
+        var query = new GetQuizAttemptsQuery(quizId, skip, take, parsed, userId);
+        var result = await mediator.Send(query, cancellationToken);
         return this.ToActionResult(result);
     }
 

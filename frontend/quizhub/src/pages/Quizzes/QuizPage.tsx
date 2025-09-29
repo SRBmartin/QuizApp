@@ -6,10 +6,11 @@ import type { Quiz } from "../../models/quiz";
 import { useAuth } from "../../context/AuthContext";
 import { QuestionType } from "../../models/question";
 import { attemptsApi } from "../../services/attempts.api";
+import QuizAttemptsTable from "../../components/Tables/QuizAttempt/QuizAttemptsTable";
 
 const QuizPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const { isAdmin } = useAuth();
+  const { isAdmin, user } = useAuth();
   const [quiz, setQuiz] = useState<Quiz | null>(null);
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -69,6 +70,12 @@ const QuizPage: React.FC = () => {
             Start the quiz
           </button>
         </div>
+      )}
+
+      {isAdmin && id && (
+        <section className="section">
+          <QuizAttemptsTable quizId={id} pageSize={20} />
+        </section>
       )}
 
       {isAdmin && (

@@ -19,6 +19,7 @@ import QuizzesPage from "./pages/Quizzes/QuizzesPage";
 import QuizPage from "./pages/Quizzes/QuizPage";
 import AnswerQuizPage from "./pages/Attempts/AnswerQuizPage";
 import ResultPage from "./pages/Attempts/ResultPage";
+import HomePage from "./pages/Home/HomePage";
 
 const Home: React.FC = () => (
   <div style={{ padding: "2rem" }}>
@@ -35,8 +36,6 @@ function App() {
           <Header />
           <main className="main-content">
             <Routes>
-              <Route path="/" element={<Home />} />
-
               {/* Guest-only routes */}
               <Route element={<RequireGuest redirectTo="/" />}>
                 <Route path="/login" element={<LoginPage />} />
@@ -45,6 +44,7 @@ function App() {
 
               {/* Auth-only routes */}
               <Route element={<RequireAuth />}>
+                <Route path="/" element={<HomePage />} />
                 <Route path="/quizzes" element={<QuizzesPage />} />
                 <Route path="/quiz/:id" element={<QuizPage />} />
                 <Route path="/quiz/:quizId/answer" element={<AnswerQuizPage />} />

@@ -1,5 +1,5 @@
 import { http } from "./http";
-import type { LeaderboardResponse, Quiz } from "../models/quiz";
+import type { GlobalLeaderboardResponse, LeaderboardResponse, Quiz } from "../models/quiz";
 
 function qs(params: Record<string, string | number | undefined>) {
   const sp = new URLSearchParams();
@@ -82,5 +82,13 @@ export const quizzesApi = {
     sp.set("period", (opts?.period ?? "all"));
     sp.set("take", String(opts?.take ?? 20));
     return http<LeaderboardResponse>(`/api/Quiz/quizzes/${quizId}/top?${sp.toString()}`, { method: "GET" });
-  }
+  },
+
+  async getGlobalTop(opts?: { period?: "all" | "month" | "week"; take?: number }): Promise<GlobalLeaderboardResponse> {
+    const sp = new URLSearchParams();
+    sp.set("period", (opts?.period ?? "all"));
+    sp.set("take", String(opts?.take ?? 50));
+    return http<GlobalLeaderboardResponse>(`/api/Quiz/top?${sp.toString()}`, { method: "GET" });
+  },
+
 };

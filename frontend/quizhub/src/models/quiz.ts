@@ -60,3 +60,11 @@ export type LeaderboardResponse = {
   top: LeaderboardEntry[];
   myEntry?: LeaderboardEntry | null;
 };
+
+export type GlobalLeaderboardResponse = {
+  period: "all" | "month" | "week" | string;
+  maxScoreTotal: number;
+  totalParticipants: number;
+  top: LeaderboardEntry[];
+  myEntry?: LeaderboardEntry | null;
+};

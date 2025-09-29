@@ -21,6 +21,7 @@ import AnswerQuizPage from "./pages/Attempts/AnswerQuizPage";
 import ResultPage from "./pages/Attempts/ResultPage";
 import HomePage from "./pages/Home/HomePage";
 import LeaderboardPage from "./pages/Quizzes/Leaderboard/LeaderboardPage";
+import GlobalLeaderboardPage from "./pages/Quizzes/Leaderboard/GlobalLeaderboardPage";
 
 const Home: React.FC = () => (
   <div style={{ padding: "2rem" }}>
@@ -51,6 +52,7 @@ function App() {
                 <Route path="/quiz/:id/leaderboard" element={<LeaderboardPage />} />
                 <Route path="/quiz/:quizId/answer" element={<AnswerQuizPage />} />
                 <Route path="/attempt/:attemptId/result" element={<ResultPage />} />
+                <Route path="/leaderboard" element={<GlobalLeaderboardPage />} />
 
                 <Route element={<RequireAdmin />}>
                   <Route path="/admin/tags" element={<TagsPage />} />

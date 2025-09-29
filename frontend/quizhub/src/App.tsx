@@ -20,6 +20,7 @@ import QuizPage from "./pages/Quizzes/QuizPage";
 import AnswerQuizPage from "./pages/Attempts/AnswerQuizPage";
 import ResultPage from "./pages/Attempts/ResultPage";
 import HomePage from "./pages/Home/HomePage";
+import LeaderboardPage from "./pages/Quizzes/Leaderboard/LeaderboardPage";
 
 const Home: React.FC = () => (
   <div style={{ padding: "2rem" }}>
@@ -47,6 +48,7 @@ function App() {
                 <Route path="/" element={<HomePage />} />
                 <Route path="/quizzes" element={<QuizzesPage />} />
                 <Route path="/quiz/:id" element={<QuizPage />} />
+                <Route path="/quiz/:id/leaderboard" element={<LeaderboardPage />} />
                 <Route path="/quiz/:quizId/answer" element={<AnswerQuizPage />} />
                 <Route path="/attempt/:attemptId/result" element={<ResultPage />} />
 

@@ -1,5 +1,5 @@
 import { http } from "./http";
-import type { Quiz } from "../models/quiz";
+import type { LeaderboardResponse, Quiz } from "../models/quiz";
 
 function qs(params: Record<string, string | number | undefined>) {
   const sp = new URLSearchParams();
@@ -76,4 +76,11 @@ export const quizzesApi = {
       body: JSON.stringify({ tagIds }),
     });
   },
+
+  async getQuizTop(quizId: string, opts?: { period?: "all" | "month" | "week"; take?: number }): Promise<LeaderboardResponse> {
+    const sp = new URLSearchParams();
+    sp.set("period", (opts?.period ?? "all"));
+    sp.set("take", String(opts?.take ?? 20));
+    return http<LeaderboardResponse>(`/api/Quiz/quizzes/${quizId}/top?${sp.toString()}`, { method: "GET" });
+  }
 };

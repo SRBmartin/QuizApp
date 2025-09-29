@@ -5,6 +5,7 @@ using QuizApp.Application.Abstractions.Identity;
 using QuizApp.Application.Abstractions.Storage;
 using QuizApp.Domain.Repositories;
 using QuizApp.Domain.Repositories.UoW;
+using QuizApp.Infrastructure.Background;
 using QuizApp.Infrastructure.Configuration;
 using QuizApp.Infrastructure.Persistence.Context;
 using QuizApp.Infrastructure.Persistence.Repositories;
@@ -23,6 +24,8 @@ public static class DependencyInjection
         services.AddMinIo(configuration);
 
         services.AddJwtIdentity(configuration);
+
+        services.AddBackgroundServices();
 
         return services;
     }
@@ -83,6 +86,13 @@ public static class DependencyInjection
         services.AddSingleton<IIdentityService, JwtIdentityService>();
 
         services.AddSingleton<IPasswordService, BCryptPasswordService>();
+
+        return services;
+    }
+
+    private static IServiceCollection AddBackgroundServices(this IServiceCollection services)
+    {
+        services.AddHostedService<AttemptExpirationWorker>();
 
         return services;
     }

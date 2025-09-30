@@ -1,0 +1,182 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="QuizApp.Domain.Entities.Attempt">
+    <Position X="1" Y="0.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAADIAAEACAACAIAABAAAAgAIAAAAAAAAABAAAQAAAA=</HashCode>
+      <FileName>Entities\Attempt.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="Quiz" />
+      <Property Name="User" />
+    </ShowAsAssociation>
+    <ShowAsCollectionAssociation>
+      <Property Name="Items" />
+    </ShowAsCollectionAssociation>
+  </Class>
+  <Class Name="QuizApp.Domain.Entities.AttemptItem">
+    <Position X="4.25" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAACgAAAAAAEAAAAAAABAAAQIAAAAAQEAAIAQAQAAAA=</HashCode>
+      <FileName>Entities\AttemptItem.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="Attempt" />
+      <Property Name="Question" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="QuizApp.Domain.Entities.AttemptItemChoice">
+    <Position X="7" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAEQAAAAAAAAAAAAAAAAAAABAAAACAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Entities\AttemptItemChoice.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="AttemptItem" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="QuizApp.Domain.Entities.AttemptItemText">
+    <Position X="10" Y="0.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAQAAAAAAAAAAAAAAAAAAABAAAAAAAAABAAAAAAAAA=</HashCode>
+      <FileName>Entities\AttemptItemText.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="AttemptItem" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="QuizApp.Domain.Entities.Quiz">
+    <Position X="8.75" Y="6" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQCAAAAACAgAAAAACAAAAQAABEIAECEAAAAAREAAAE=</HashCode>
+      <FileName>Entities\Quiz.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsCollectionAssociation>
+      <Property Name="Attempts" />
+      <Property Name="Questions" />
+      <Property Name="QuizTags" />
+    </ShowAsCollectionAssociation>
+  </Class>
+  <Class Name="QuizApp.Domain.Entities.QuizQuestion">
+    <Position X="11.5" Y="6" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAACAAAAACAAgAAABCAAAAABIAEAAEQEAQAAAQQAAAE=</HashCode>
+      <FileName>Entities\QuizQuestion.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="Quiz" />
+      <Property Name="TextAnswer" />
+    </ShowAsAssociation>
+    <ShowAsCollectionAssociation>
+      <Property Name="AttemptItems" />
+      <Property Name="Choices" />
+    </ShowAsCollectionAssociation>
+  </Class>
+  <Class Name="QuizApp.Domain.Entities.QuizQuestionChoice">
+    <Position X="14.25" Y="5.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAACAAAIEAAAAAAAAAAAAAAAAAEAAEAEAAIAAQQAAAA=</HashCode>
+      <FileName>Entities\QuizQuestionChoice.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="Question" />
+    </ShowAsAssociation>
+    <ShowAsCollectionAssociation>
+      <Property Name="AttemptItemChoices" />
+    </ShowAsCollectionAssociation>
+  </Class>
+  <Class Name="QuizApp.Domain.Entities.QuizQuestionText">
+    <Position X="16.75" Y="6" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAACAAAAAAAAAAAAAAAAAAAAAAAAAEAEAAAACAQAAAA=</HashCode>
+      <FileName>Entities\QuizQuestionText.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="Question" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="QuizApp.Domain.Entities.QuizTag">
+    <Position X="1.5" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAgAAAAAAAAAAAAIAAAAEAAAAAAAAQAAAE=</HashCode>
+      <FileName>Entities\QuizTag.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="Quiz" />
+      <Property Name="Tag" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="QuizApp.Domain.Entities.Tag">
+    <Position X="4.25" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQCAAAAACAAAAAAAAAAAAQAABEAAEAAAAAAAQAAAAE=</HashCode>
+      <FileName>Entities\Tag.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsCollectionAssociation>
+      <Property Name="QuizTags" />
+    </ShowAsCollectionAssociation>
+  </Class>
+  <Class Name="QuizApp.Domain.Entities.User">
+    <Position X="15.25" Y="1" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AACCAIAEACAAACAAEQAAAAAAAAAAAEAAAAAQAAEAAAA=</HashCode>
+      <FileName>Entities\User.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsCollectionAssociation>
+      <Property Name="Attempts" />
+      <Property Name="QuestionsCreated" />
+      <Property Name="QuizzesCreated" />
+      <Property Name="TagsCreated" />
+    </ShowAsCollectionAssociation>
+  </Class>
+  <Interface Name="QuizApp.Domain.Repositories.Writer.IAttemptAnswerWriter">
+    <Position X="19.75" Y="0.5" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Repositories\Writer\IAttemptAnswerWriter.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="QuizApp.Domain.Repositories.IAttemptRepository">
+    <Position X="19.75" Y="2" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAIAEAAACAAAgAAAAAAAAAAAA=</HashCode>
+      <FileName>Repositories\IAttemptRepository.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="QuizApp.Domain.Repositories.IQuizQuestionRepository">
+    <Position X="19.75" Y="6.5" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAIAEAAAAAAAACAAAAAAAAAAA=</HashCode>
+      <FileName>Repositories\IQuizQuestionRepository.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="QuizApp.Domain.Repositories.IQuizRepository">
+    <Position X="19.75" Y="4" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAAACAAAAAAAAAAAAAKAEAAAABIAgAAAAAAAAAAAA=</HashCode>
+      <FileName>Repositories\IQuizRepository.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="QuizApp.Domain.Repositories.IQuizTagRepository">
+    <Position X="19.75" Y="8.25" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAACAAAAIAAAAAAACAAAAAAABAAAAAAAAIAgAA=</HashCode>
+      <FileName>Repositories\IQuizTagRepository.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="QuizApp.Domain.Repositories.ITagRepository">
+    <Position X="22.5" Y="2.5" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAQCAAAAAAAAAAAAAAAAJAEAAAAJIAABAAAAAAAAAAA=</HashCode>
+      <FileName>Repositories\ITagRepository.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="QuizApp.Domain.Repositories.IUserRepository">
+    <Position X="22.5" Y="5.75" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAACAAAEAAAAAAAAAAQAAgAAAAAA=</HashCode>
+      <FileName>Repositories\IUserRepository.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

@@ -57,6 +57,48 @@ services:
       "
     ]
 
+  quiz-app-api:
+    container_name: restfulapi.quiz
+    build:
+      context: ..
+      dockerfile: backend/QuizApp/Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Development"
+      ASPNETCORE_URLS: "http://+:8080"
+      ConnectionStrings__QuizDb: "Host=quiz-app-pg;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}"
+      MinioImageStorageConfiguration__Endpoint: "minio:9000"
+      MinioImageStorageConfiguration__UseSsl: "false"
+      MinioImageStorageConfiguration__AccessKey: "${MINIO_ROOT_USER}"
+      MinioImageStorageConfiguration__SecretKey: "${MINIO_ROOT_PASSWORD}"
+      MinioImageStorageConfiguration__PublicBaseUrl: "${MINIO_PUBLIC_BASE_URL:-http://localhost:9000/}"
+      MinioImageStorageConfiguration__Region: "${MINIO_REGION}"
+      MinioImageStorageConfiguration__ForcePathStyle: "true"
+      MinioImageStorageConfiguration__MultipartChunkSizeBytes: "${MINIO_MULTIPART_CHUNK_SIZE_BYTES:-10485760}"
+      MinioImageStorageConfiguration__UsersBucket: "${MINIO_BUCKET}"
+      JwtConfiguration__Issuer: "${JWT_ISSUER:-QuizApp}"
+      JwtConfiguration__Audience: "${JWT_AUDIENCE:-QuizApp.Api}"
+      JwtConfiguration__SecurityKey: "${JWT_SECURITY_KEY}"
+      JwtConfiguration__ExpiryMinutes: "${JWT_EXPIRY_MINUTES:-60}"
+      Cors__AllowedOrigins__0: "${CORS_ALLOWED_ORIGIN_0:-http://localhost:3000}"
+    depends_on:
+      - quiz-app-pg
+      - minio
+      - minio-init
+
+  quiz-app-web:
+    container_name: quiz-app-web
+    build:
+      context: ..
+      dockerfile: frontend/quizhub/Dockerfile
+      args:
+        REACT_APP_API_BASE: ${REACT_APP_API_BASE:-http://localhost:8080}
+    ports:
+      - "3000:80"
+    depends_on:
+      - quiz-app-api
+
 volumes:
   quiz-app-pg_data:
   quiz-app-minio_data:
